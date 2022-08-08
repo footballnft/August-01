@@ -8,7 +8,7 @@ export const footerLinks: FooterLinkType[] = [
     items: [
       {
         label: "Contact",
-        href: "contact.amehswap.com",
+        href: "https://contact-form3.vercel.app/",
       },
       {
         label: "Blog",

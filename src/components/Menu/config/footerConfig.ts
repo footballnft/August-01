@@ -7,7 +7,7 @@ export const footerLinks: (t: ContextApi['t']) => FooterLinkType[] = (t) => [
     items: [
       {
         label: t('Contact'),
-        href: 'contact.amehswap.com',
+        href: 'https://contact-form3.vercel.app/',
         isHighlighted: true,
       },
       {
