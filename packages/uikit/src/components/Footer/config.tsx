@@ -8,7 +8,7 @@ export const footerLinks: FooterLinkType[] = [
     items: [
       {
         label: "Contact",
-        href: "https://contact.amehswap.com",
+        href: "contact.amehswap.com",
       },
       {
         label: "Blog",
