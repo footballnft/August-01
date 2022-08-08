@@ -7,7 +7,7 @@ export const footerLinks: (t: ContextApi['t']) => FooterLinkType[] = (t) => [
     items: [
       {
         label: t('Contact'),
-        href: 'https://contact.amehswap.com',
+        href: 'contact.amehswap.com',
         isHighlighted: true,
       },
       {
