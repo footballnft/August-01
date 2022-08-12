@@ -30,7 +30,7 @@ export default function WidgetContainer() {
          // onlyPaymentMethods: onlyPaymentMethods,
          // excludePaymentMethods: excludePaymentMethods,
          // excludeFiat: ["NGN"],
-        // onlyGateways: ["Mercuryo", "Wyre", "Xanpool", "Coinify", "Utorg", "Transak", "Itez","Coinify"]
+        onlyGateways: ["Moonpay", "Wyre"]
          // onlyFiat: onlyFiat,
         }}
         isAddressEditable={false}
