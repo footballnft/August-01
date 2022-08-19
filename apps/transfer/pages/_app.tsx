@@ -68,7 +68,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           content="Discover AmehSwap, the leading fiat to crypto DEX on Binance Smart Chain (BSC)."
         />
         <meta name="theme-color" content="#1FC7D4" />
-        <meta name="twitter:image" content="https://pancakeswap.finance/images/hero.png" />
+        <meta name="twitter:image" content="https://amehswap.com/images/ameh-hero.png" />
         <meta
           name="twitter:description"
           content="The most popular fiat to crypto DEX on BSC! The fastest and seamless opportunity to invest on PANCAKESWAP DEX."
