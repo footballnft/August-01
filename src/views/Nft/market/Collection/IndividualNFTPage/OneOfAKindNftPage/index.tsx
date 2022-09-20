@@ -6,6 +6,7 @@ import noop from 'lodash/noop'
 import Page from 'components/Layout/Page'
 import { useGetCollection } from 'state/nftMarket/hooks'
 import PageLoader from 'components/Loader/PageLoader'
+import fromPairs from 'lodash/fromPairs'
 import MainNFTCard from './MainNFTCard'
 import { TwoColumnsContainer } from '../shared/styles'
 import PropertiesCard from '../shared/PropertiesCard'
@@ -26,7 +27,10 @@ const OwnerActivityContainer = styled(Flex)`
   gap: 22px;
 `
 
-const IndividualNFTPage: React.FC<IndividualNFTPageProps> = ({ collectionAddress, tokenId }) => {
+const IndividualNFTPage: React.FC<React.PropsWithChildren<IndividualNFTPageProps>> = ({
+  collectionAddress,
+  tokenId,
+}) => {
   const collection = useGetCollection(collectionAddress)
   const { data: distributionData, isFetching: isFetchingDistribution } = useGetCollectionDistribution(collectionAddress)
   const { combinedNft: nft, isOwn: isOwnNft, isProfilePic, refetch } = useCompleteNft(collectionAddress, tokenId)
@@ -35,16 +39,15 @@ const IndividualNFTPage: React.FC<IndividualNFTPageProps> = ({ collectionAddress
 
   const attributesRarity = useMemo(() => {
     if (distributionData && !isFetchingDistribution && properties) {
-      return Object.keys(distributionData).reduce((rarityMap, traitType) => {
-        const total = sum(Object.values(distributionData[traitType]))
-        const nftAttributeValue = properties.find((attribute) => attribute.traitType === traitType)?.value
-        const count = distributionData[traitType][nftAttributeValue]
-        const rarity = (count / total) * 100
-        return {
-          ...rarityMap,
-          [traitType]: rarity,
-        }
-      }, {})
+      return fromPairs(
+        Object.keys(distributionData).map((traitType) => {
+          const total = sum(Object.values(distributionData[traitType]))
+          const nftAttributeValue = properties.find((attribute) => attribute.traitType === traitType)?.value
+          const count = distributionData[traitType][nftAttributeValue]
+          const rarity = (count / total) * 100
+          return [traitType, rarity]
+        }),
+      )
     }
     return {}
   }, [properties, isFetchingDistribution, distributionData])

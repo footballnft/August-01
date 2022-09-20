@@ -1,13 +1,16 @@
-import { useRef, useMemo, useCallback } from 'react'
+import { useRef, useMemo } from 'react'
+import { latinise } from 'utils/latinise'
 import styled from 'styled-components'
-import { Button, ChevronUpIcon, RowType } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { RowType } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
 import { getBalanceNumber } from 'utils/formatBalance'
+import { BIG_ZERO } from 'utils/bigNumber'
+import { useRouter } from 'next/router'
 import { getDisplayApr } from '../getDisplayApr'
 
 import Row, { RowProps } from './Row'
 import { DesktopColumnSchema, FarmWithStakedValue } from '../types'
+import ProxyFarmContainer from '../YieldBooster/components/ProxyFarmContainer'
 
 export interface ITableProps {
   farms: FarmWithStakedValue[]
@@ -55,16 +58,9 @@ const TableContainer = styled.div`
   position: relative;
 `
 
-const ScrollButtonContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  padding-top: 5px;
-  padding-bottom: 5px;
-`
-
-const FarmTable: React.FC<ITableProps> = ({ farms, cakePrice, userDataReady }) => {
+const FarmTable: React.FC<React.PropsWithChildren<ITableProps>> = ({ farms, cakePrice, userDataReady }) => {
   const tableWrapperEl = useRef<HTMLDivElement>(null)
-  const { t } = useTranslation()
+  const { query } = useRouter()
 
   const columns = useMemo(
     () =>
@@ -93,19 +89,28 @@ const FarmTable: React.FC<ITableProps> = ({ farms, cakePrice, userDataReady }) =
     [],
   )
 
-  const scrollToTop = useCallback((): void => {
-    window.scrollTo({
-      top: tableWrapperEl.current.offsetTop,
-      behavior: 'smooth',
-    })
-  }, [])
+  const getFarmEarnings = (farm) => {
+    let earnings = BIG_ZERO
+    const existingEarnings = new BigNumber(farm.userData.earnings)
 
-  const rowData = farms.map((farm) => {
+    if (farm.boosted) {
+      const proxyEarnings = new BigNumber(farm.userData?.proxy?.earnings)
+
+      earnings = proxyEarnings.gt(0) ? proxyEarnings : existingEarnings
+    } else {
+      earnings = existingEarnings
+    }
+
+    return getBalanceNumber(earnings)
+  }
+
+  const generateRow = (farm) => {
     const { token, quoteToken } = farm
     const tokenAddress = token.address
     const quoteTokenAddress = quoteToken.address
     const lpLabel = farm.lpSymbol && farm.lpSymbol.split(' ')[0].toUpperCase().replace('PANCAKE', '')
-
+    const lowercaseQuery = latinise(typeof query?.search === 'string' ? query.search.toLowerCase() : '')
+    const initialActivity = latinise(lpLabel?.toLowerCase()) === lowercaseQuery
     const row: RowProps = {
       apr: {
         value: getDisplayApr(farm.apr, farm.lpRewardsApr),
@@ -116,6 +121,7 @@ const FarmTable: React.FC<ITableProps> = ({ farms, cakePrice, userDataReady }) =
         tokenAddress,
         quoteTokenAddress,
         cakePrice,
+        lpRewardsApr: farm.lpRewardsApr,
         originalValue: farm.apr,
       },
       farm: {
@@ -123,25 +129,29 @@ const FarmTable: React.FC<ITableProps> = ({ farms, cakePrice, userDataReady }) =
         pid: farm.pid,
         token: farm.token,
         quoteToken: farm.quoteToken,
+        isReady: farm.multiplier !== undefined,
       },
       earned: {
-        earnings: getBalanceNumber(new BigNumber(farm.userData.earnings)),
+        earnings: getFarmEarnings(farm),
         pid: farm.pid,
       },
       liquidity: {
-        liquidity: farm.liquidity,
+        liquidity: farm?.liquidity,
       },
       multiplier: {
         multiplier: farm.multiplier,
       },
       type: farm.isCommunity ? 'community' : 'core',
       details: farm,
+      initialActivity,
     }
 
     return row
-  })
+  }
 
-  const sortedRows = rowData.map((row) => {
+  const rowData = farms.map((farm) => generateRow(farm))
+
+  const generateSortedRow = (row) => {
     // @ts-ignore
     const newRow: RowProps = {}
     columns.forEach((column) => {
@@ -150,8 +160,11 @@ const FarmTable: React.FC<ITableProps> = ({ farms, cakePrice, userDataReady }) =
       }
       newRow[column.name] = row[column.name]
     })
+    newRow.initialActivity = row.initialActivity
     return newRow
-  })
+  }
+
+  const sortedRows = rowData.map(generateSortedRow)
 
   return (
     <Container id="farms-table">
@@ -160,17 +173,17 @@ const FarmTable: React.FC<ITableProps> = ({ farms, cakePrice, userDataReady }) =
           <StyledTable>
             <TableBody>
               {sortedRows.map((row) => {
-                return <Row {...row} userDataReady={userDataReady} key={`table-row-${row.farm.pid}`} />
+                return row?.details?.boosted ? (
+                  <ProxyFarmContainer key={`table-row-${row.farm.pid}`} farm={row.details}>
+                    <Row {...row} userDataReady={userDataReady} />
+                  </ProxyFarmContainer>
+                ) : (
+                  <Row {...row} userDataReady={userDataReady} key={`table-row-${row.farm.pid}`} />
+                )
               })}
             </TableBody>
           </StyledTable>
         </TableWrapper>
-        <ScrollButtonContainer>
-          <Button variant="text" onClick={scrollToTop}>
-            {t('To Top')}
-            <ChevronUpIcon color="primary" />
-          </Button>
-        </ScrollButtonContainer>
       </TableContainer>
     </Container>
   )

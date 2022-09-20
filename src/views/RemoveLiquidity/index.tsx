@@ -4,8 +4,7 @@ import { splitSignature } from '@ethersproject/bytes'
 import { Contract } from '@ethersproject/contracts'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useRouter } from 'next/router'
-import useToast from 'hooks/useToast'
-import { Currency, currencyEquals, ETHER, Percent, WNATIVE } from '@pancakeswap/sdk'
+import { Currency, Percent, WNATIVE, ChainId } from '@pancakeswap/sdk'
 import {
   Button,
   Text,
@@ -19,13 +18,17 @@ import {
   Checkbox,
   TooltipText,
   useTooltip,
+  useToast,
 } from '@pancakeswap/uikit'
+import { useWeb3LibraryContext } from '@pancakeswap/wagmi'
 import { BigNumber } from '@ethersproject/bignumber'
 import { callWithEstimateGas } from 'utils/calls'
 import { getLPSymbol } from 'utils/getLpSymbol'
+import useNativeCurrency from 'hooks/useNativeCurrency'
 import { getZapAddress } from 'utils/addressHelpers'
 import { ZapCheckbox } from 'components/CurrencyInputPanel/ZapCheckbox'
-import { useTranslation } from 'contexts/Localization'
+import { CommitButton } from 'components/CommitButton'
+import { useTranslation } from '@pancakeswap/localization'
 import { useLPApr } from 'state/swap/hooks'
 import { ROUTER_ADDRESS } from 'config/constants/exchange'
 import { transactionErrorToUserReadableMessage } from 'utils/transactionErrorToUserReadableMessage'
@@ -39,17 +42,15 @@ import { LightGreyCard } from '../../components/Card'
 
 import { CurrencyLogo } from '../../components/Logo'
 import useActiveWeb3React from '../../hooks/useActiveWeb3React'
-import { useCurrency } from '../../hooks/Tokens'
 import { usePairContract, useZapContract } from '../../hooks/useContract'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
 
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import StyledInternalLink from '../../components/Links'
 import { calculateGasMargin } from '../../utils'
-import { getRouterContract, calculateSlippageAmount } from '../../utils/exchange'
+import { calculateSlippageAmount, useRouterContract } from '../../utils/exchange'
 import { currencyId } from '../../utils/currencyId'
 import useDebouncedChangeHandler from '../../hooks/useDebouncedChangeHandler'
-import { wrappedCurrency } from '../../utils/wrappedCurrency'
 import { useApproveCallback, ApprovalState } from '../../hooks/useApproveCallback'
 import Dots from '../../components/Loader/Dots'
 import { useBurnActionHandlers, useDerivedBurnInfo, useBurnState } from '../../state/burn/hooks'
@@ -60,6 +61,7 @@ import Page from '../Page'
 import ConfirmLiquidityModal from '../Swap/components/ConfirmRemoveLiquidityModal'
 import { logError } from '../../utils/sentry'
 import { formatAmount } from '../../utils/formatInfoNumbers'
+import { CommonBasesType } from '../../components/SearchModal/types'
 
 const BorderCard = styled.div`
   border: solid 1px ${({ theme }) => theme.colors.cardBorder};
@@ -67,23 +69,26 @@ const BorderCard = styled.div`
   padding: 16px;
 `
 
-export default function RemoveLiquidity() {
+const zapSupportedChainId = [ChainId.BSC, ChainId.BSC_TESTNET]
+
+export default function RemoveLiquidity({ currencyA, currencyB, currencyIdA, currencyIdB }) {
   const router = useRouter()
+  const native = useNativeCurrency()
   const [zapMode] = useZapModeManager()
   const [temporarilyZapMode, setTemporarilyZapMode] = useState(true)
-  const [currencyIdA, currencyIdB] = router.query.currency || []
-  const [currencyA, currencyB] = [useCurrency(currencyIdA) ?? undefined, useCurrency(currencyIdB) ?? undefined]
-  const { account, chainId, library } = useActiveWeb3React()
+  const { account, chainId, isWrongNetwork } = useActiveWeb3React()
+  const library = useWeb3LibraryContext()
   const { toastError } = useToast()
-  const [tokenA, tokenB] = useMemo(
-    () => [wrappedCurrency(currencyA, chainId), wrappedCurrency(currencyB, chainId)],
-    [currencyA, currencyB, chainId],
-  )
+  const [tokenA, tokenB] = useMemo(() => [currencyA?.wrapped, currencyB?.wrapped], [currencyA, currencyB])
 
   const { t } = useTranslation()
   const gasPrice = useGasPrice()
 
-  const zapModeStatus = useMemo(() => !!zapMode && temporarilyZapMode, [zapMode, temporarilyZapMode])
+  const canZapOut = useMemo(() => zapSupportedChainId.includes(chainId) && zapMode, [chainId, zapMode])
+  const zapModeStatus = useMemo(
+    () => canZapOut && !!zapMode && temporarilyZapMode,
+    [canZapOut, zapMode, temporarilyZapMode],
+  )
 
   // burn state
   const { independentField, typedValue } = useBurnState()
@@ -183,7 +188,7 @@ export default function RemoveLiquidity() {
     const message = {
       owner: account,
       spender: ROUTER_ADDRESS[chainId],
-      value: liquidityAmount.raw.toString(),
+      value: liquidityAmount.quotient.toString(),
       nonce: nonce.toHexString(),
       deadline: deadline.toNumber(),
     }
@@ -234,6 +239,8 @@ export default function RemoveLiquidity() {
   // tx sending
   const addTransaction = useTransactionAdder()
 
+  const routerContract = useRouterContract()
+
   async function onZapOut() {
     if (!chainId || !library || !account || !estimateZapOutAmount) throw new Error('missing dependencies')
     if (!zapContract) throw new Error('missing zap contract')
@@ -259,11 +266,11 @@ export default function RemoveLiquidity() {
 
     let methodName
     let args
-    if (oneCurrencyIsBNB && tokenToReceive.toLowerCase() === WNATIVE[chainId].address.toLowerCase()) {
+    if (oneCurrencyIsNative && tokenToReceive.toLowerCase() === WNATIVE[chainId].address.toLowerCase()) {
       methodName = 'zapOutBNB'
       args = [
         pair.liquidityToken.address,
-        parsedAmounts[Field.LIQUIDITY].raw.toString(),
+        parsedAmounts[Field.LIQUIDITY].quotient.toString(),
         calculateSlippageAmount(estimateZapOutAmount, allowedSlippage)[0].toString(),
         calculateSlippageAmount(totalTokenAmountOut, allowedSlippage)[0].toString(),
       ]
@@ -272,7 +279,7 @@ export default function RemoveLiquidity() {
       args = [
         pair.liquidityToken.address,
         tokenToReceive,
-        parsedAmounts[Field.LIQUIDITY].raw.toString(),
+        parsedAmounts[Field.LIQUIDITY].quotient.toString(),
         calculateSlippageAmount(estimateZapOutAmount, allowedSlippage)[0].toString(),
         calculateSlippageAmount(totalTokenAmountOut, allowedSlippage)[0].toString(),
       ]
@@ -283,11 +290,14 @@ export default function RemoveLiquidity() {
     })
       .then((response) => {
         setLiquidityState({ attemptingTxn: false, liquidityErrorMessage: undefined, txHash: response.hash })
+        const amount = parsedAmounts[Field.LIQUIDITY].toSignificant(3)
+        const symbol = getLPSymbol(pair.token0.symbol, pair.token1.symbol)
         addTransaction(response, {
-          summary: `Remove ${parsedAmounts[Field.LIQUIDITY].toSignificant(3)} ${getLPSymbol(
-            pair.token0.symbol,
-            pair.token1.symbol,
-          )}`,
+          summary: `Remove ${amount} ${symbol}`,
+          translatableSummary: {
+            text: 'Remove %amount% %symbol%',
+            data: { amount, symbol },
+          },
           type: 'remove-liquidity',
         })
       })
@@ -304,13 +314,12 @@ export default function RemoveLiquidity() {
   }
 
   async function onRemove() {
-    if (!chainId || !library || !account || !deadline) throw new Error('missing dependencies')
+    if (!chainId || !account || !deadline || !routerContract) throw new Error('missing dependencies')
     const { [Field.CURRENCY_A]: currencyAmountA, [Field.CURRENCY_B]: currencyAmountB } = parsedAmounts
     if (!currencyAmountA || !currencyAmountB) {
       toastError(t('Error'), t('Missing currency amounts'))
       throw new Error('missing currency amounts')
     }
-    const routerContract = getRouterContract(chainId, library, account)
 
     const amountsMin = {
       [Field.CURRENCY_A]: calculateSlippageAmount(currencyAmountA, allowedSlippage)[0],
@@ -327,8 +336,8 @@ export default function RemoveLiquidity() {
       throw new Error('missing liquidity amount')
     }
 
-    const currencyBIsBNB = currencyB === ETHER
-    const oneCurrencyIsBNB = currencyA === ETHER || currencyBIsBNB
+    const currencyBIsNative = currencyB?.isNative
+    const oneCurrencyIsNative = currencyA?.isNative || currencyBIsNative
 
     if (!tokenA || !tokenB) {
       toastError(t('Error'), t('Could not wrap'))
@@ -340,13 +349,13 @@ export default function RemoveLiquidity() {
     // we have approval, use normal remove liquidity
     if (approval === ApprovalState.APPROVED) {
       // removeLiquidityETH
-      if (oneCurrencyIsBNB) {
+      if (oneCurrencyIsNative) {
         methodNames = ['removeLiquidityETH', 'removeLiquidityETHSupportingFeeOnTransferTokens']
         args = [
-          currencyBIsBNB ? tokenA.address : tokenB.address,
-          liquidityAmount.raw.toString(),
-          amountsMin[currencyBIsBNB ? Field.CURRENCY_A : Field.CURRENCY_B].toString(),
-          amountsMin[currencyBIsBNB ? Field.CURRENCY_B : Field.CURRENCY_A].toString(),
+          currencyBIsNative ? tokenA.address : tokenB.address,
+          liquidityAmount.quotient.toString(),
+          amountsMin[currencyBIsNative ? Field.CURRENCY_A : Field.CURRENCY_B].toString(),
+          amountsMin[currencyBIsNative ? Field.CURRENCY_B : Field.CURRENCY_A].toString(),
           account,
           deadline.toHexString(),
         ]
@@ -357,7 +366,7 @@ export default function RemoveLiquidity() {
         args = [
           tokenA.address,
           tokenB.address,
-          liquidityAmount.raw.toString(),
+          liquidityAmount.quotient.toString(),
           amountsMin[Field.CURRENCY_A].toString(),
           amountsMin[Field.CURRENCY_B].toString(),
           account,
@@ -368,13 +377,13 @@ export default function RemoveLiquidity() {
     // we have a signature, use permit versions of remove liquidity
     else if (signatureData !== null) {
       // removeLiquidityETHWithPermit
-      if (oneCurrencyIsBNB) {
+      if (oneCurrencyIsNative) {
         methodNames = ['removeLiquidityETHWithPermit', 'removeLiquidityETHWithPermitSupportingFeeOnTransferTokens']
         args = [
-          currencyBIsBNB ? tokenA.address : tokenB.address,
-          liquidityAmount.raw.toString(),
-          amountsMin[currencyBIsBNB ? Field.CURRENCY_A : Field.CURRENCY_B].toString(),
-          amountsMin[currencyBIsBNB ? Field.CURRENCY_B : Field.CURRENCY_A].toString(),
+          currencyBIsNative ? tokenA.address : tokenB.address,
+          liquidityAmount.quotient.toString(),
+          amountsMin[currencyBIsNative ? Field.CURRENCY_A : Field.CURRENCY_B].toString(),
+          amountsMin[currencyBIsNative ? Field.CURRENCY_B : Field.CURRENCY_A].toString(),
           account,
           signatureData.deadline,
           false,
@@ -389,7 +398,7 @@ export default function RemoveLiquidity() {
         args = [
           tokenA.address,
           tokenB.address,
-          liquidityAmount.raw.toString(),
+          liquidityAmount.quotient.toString(),
           amountsMin[Field.CURRENCY_A].toString(),
           amountsMin[Field.CURRENCY_B].toString(),
           account,
@@ -405,27 +414,27 @@ export default function RemoveLiquidity() {
       throw new Error('Attempting to confirm without approval or a signature')
     }
 
-    const safeGasEstimates: (BigNumber | undefined)[] = await Promise.all(
-      methodNames.map((methodName) =>
-        routerContract.estimateGas[methodName](...args)
-          .then(calculateGasMargin)
-          .catch((err) => {
-            console.error(`estimateGas failed`, methodName, args, err)
-            return undefined
-          }),
-      ),
-    )
+    let methodSafeGasEstimate: { methodName: string; safeGasEstimate: BigNumber }
+    for (let i = 0; i < methodNames.length; i++) {
+      let safeGasEstimate
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        safeGasEstimate = calculateGasMargin(await routerContract.estimateGas[methodNames[i]](...args))
+      } catch (e) {
+        console.error(`estimateGas failed`, methodNames[i], args, e)
+      }
 
-    const indexOfSuccessfulEstimation = safeGasEstimates.findIndex((safeGasEstimate) =>
-      BigNumber.isBigNumber(safeGasEstimate),
-    )
+      if (BigNumber.isBigNumber(safeGasEstimate)) {
+        methodSafeGasEstimate = { methodName: methodNames[i], safeGasEstimate }
+        break
+      }
+    }
 
     // all estimations failed...
-    if (indexOfSuccessfulEstimation === -1) {
+    if (!methodSafeGasEstimate) {
       toastError(t('Error'), t('This transaction would fail'))
     } else {
-      const methodName = methodNames[indexOfSuccessfulEstimation]
-      const safeGasEstimate = safeGasEstimates[indexOfSuccessfulEstimation]
+      const { methodName, safeGasEstimate } = methodSafeGasEstimate
 
       setLiquidityState({ attemptingTxn: true, liquidityErrorMessage: undefined, txHash: undefined })
       await routerContract[methodName](...args, {
@@ -434,10 +443,14 @@ export default function RemoveLiquidity() {
       })
         .then((response: TransactionResponse) => {
           setLiquidityState({ attemptingTxn: false, liquidityErrorMessage: undefined, txHash: response.hash })
+          const amountA = parsedAmounts[Field.CURRENCY_A]?.toSignificant(3)
+          const amountB = parsedAmounts[Field.CURRENCY_B]?.toSignificant(3)
           addTransaction(response, {
-            summary: `Remove ${parsedAmounts[Field.CURRENCY_A]?.toSignificant(3)} ${
-              currencyA?.symbol
-            } and ${parsedAmounts[Field.CURRENCY_B]?.toSignificant(3)} ${currencyB?.symbol}`,
+            summary: `Remove ${amountA} ${currencyA?.symbol} and ${amountB} ${currencyB?.symbol}`,
+            translatableSummary: {
+              text: 'Remove %amountA% %symbolA% and %amountB% %symbolB%',
+              data: { amountA, symbolA: currencyA?.symbol, amountB, symbolB: currencyB?.symbol },
+            },
             type: 'remove-liquidity',
           })
         })
@@ -472,11 +485,10 @@ export default function RemoveLiquidity() {
     [onUserInput],
   )
 
-  const oneCurrencyIsBNB = currencyA === ETHER || currencyB === ETHER
-  const oneCurrencyIsWBNB = Boolean(
+  const oneCurrencyIsNative = currencyA?.isNative || currencyB?.isNative
+  const oneCurrencyIsWNative = Boolean(
     chainId &&
-      ((currencyA && currencyEquals(WNATIVE[chainId], currencyA)) ||
-        (currencyB && currencyEquals(WNATIVE[chainId], currencyB))),
+      ((currencyA && WNATIVE[chainId]?.equals(currencyA)) || (currencyB && WNATIVE[chainId]?.equals(currencyB))),
   )
 
   const handleSelectCurrencyA = useCallback(
@@ -662,23 +674,23 @@ export default function RemoveLiquidity() {
                       </Text>
                     </Flex>
                   </Flex>
-                  {chainId && (oneCurrencyIsWBNB || oneCurrencyIsBNB) ? (
+                  {chainId && (oneCurrencyIsWNative || oneCurrencyIsNative) ? (
                     <RowBetween style={{ justifyContent: 'flex-end', fontSize: '14px' }}>
-                      {oneCurrencyIsBNB ? (
+                      {oneCurrencyIsNative ? (
                         <StyledInternalLink
-                          href={`/remove/${currencyA === ETHER ? WNATIVE[chainId].address : currencyIdA}/${
-                            currencyB === ETHER ? WNATIVE[chainId].address : currencyIdB
+                          href={`/remove/${currencyA?.isNative ? WNATIVE[chainId]?.address : currencyIdA}/${
+                            currencyB?.isNative ? WNATIVE[chainId]?.address : currencyIdB
                           }`}
                         >
-                          {t('Receive WBNB')}
+                          {t('Receive %currency%', { currency: WNATIVE[chainId]?.symbol })}
                         </StyledInternalLink>
-                      ) : oneCurrencyIsWBNB ? (
+                      ) : oneCurrencyIsWNative ? (
                         <StyledInternalLink
                           href={`/remove/${
-                            currencyA && currencyEquals(currencyA, WNATIVE[chainId]) ? 'BNB' : currencyIdA
-                          }/${currencyB && currencyEquals(currencyB, WNATIVE[chainId]) ? 'BNB' : currencyIdB}`}
+                            currencyA && currencyA.equals(WNATIVE[chainId]) ? native?.symbol : currencyIdA
+                          }/${currencyB && currencyB.equals(WNATIVE[chainId]) ? native?.symbol : currencyIdB}`}
                         >
-                          {t('Receive BNB')}
+                          {t('Receive %currency%', { currency: native?.symbol })}
                         </StyledInternalLink>
                       ) : null}
                     </RowBetween>
@@ -702,6 +714,8 @@ export default function RemoveLiquidity() {
                 pair={pair}
                 id="liquidity-amount"
                 onCurrencySelect={() => null}
+                showCommonBases
+                commonBasesType={CommonBasesType.LIQUIDITY}
               />
               <ColumnCenter>
                 <ArrowDownIcon width="24px" my="16px" />
@@ -729,6 +743,8 @@ export default function RemoveLiquidity() {
                 label={t('Output')}
                 onCurrencySelect={handleSelectCurrencyA}
                 id="remove-liquidity-tokena"
+                showCommonBases
+                commonBasesType={CommonBasesType.LIQUIDITY}
               />
               <ColumnCenter>
                 <AddIcon width="24px" my="16px" />
@@ -756,6 +772,8 @@ export default function RemoveLiquidity() {
                 label={t('Output')}
                 onCurrencySelect={handleSelectCurrencyB}
                 id="remove-liquidity-tokenb"
+                showCommonBases
+                commonBasesType={CommonBasesType.LIQUIDITY}
               />
             </Box>
           )}
@@ -805,7 +823,9 @@ export default function RemoveLiquidity() {
           )}
           <Box position="relative" mt="16px">
             {!account ? (
-              <ConnectWalletButton />
+              <ConnectWalletButton width="100%" />
+            ) : isWrongNetwork ? (
+              <CommitButton width="100%" />
             ) : (
               <RowBetween>
                 <Button
@@ -856,7 +876,7 @@ export default function RemoveLiquidity() {
 
       {pair ? (
         <AutoColumn style={{ minWidth: '20rem', width: '100%', maxWidth: '400px', marginTop: '1rem' }}>
-          <MinimalPositionCard showUnwrapped={oneCurrencyIsWBNB} pair={pair} />
+          <MinimalPositionCard showUnwrapped={oneCurrencyIsWNative} pair={pair} />
         </AutoColumn>
       ) : null}
     </Page>

@@ -1,9 +1,8 @@
 import styled from 'styled-components'
 import { Box, Flex, Skeleton, Text, ProfileAvatar } from '@pancakeswap/uikit'
-import truncateHash from 'utils/truncateHash'
+import truncateHash from '@pancakeswap/utils/truncateHash'
 import { useProfileForAddress } from 'state/profile/hooks'
 import { NextLinkFromReactRouter } from 'components/NextLink'
-import { nftsBaseUrl } from '../constants'
 
 const StyledFlex = styled(Flex)`
   align-items: center;
@@ -14,12 +13,12 @@ const StyledFlex = styled(Flex)`
   }
 `
 
-const ProfileCell: React.FC<{ accountAddress: string }> = ({ accountAddress }) => {
+const ProfileCell: React.FC<React.PropsWithChildren<{ accountAddress: string }>> = ({ accountAddress }) => {
   const { profile, isFetching } = useProfileForAddress(accountAddress)
   const profileName = profile?.username || '-'
 
   return (
-    <NextLinkFromReactRouter to={`${nftsBaseUrl}/profile/${accountAddress}`}>
+    <NextLinkFromReactRouter to={`/profile/${accountAddress}`}>
       <StyledFlex>
         {!isFetching ? (
           <ProfileAvatar

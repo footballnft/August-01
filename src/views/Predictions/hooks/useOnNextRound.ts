@@ -1,6 +1,6 @@
-import { useLayoutEffect } from 'react'
-import { useWeb3React } from '@web3-react/core'
-import usePreviousValue from 'hooks/usePreviousValue'
+import { useWeb3React } from '@pancakeswap/wagmi'
+import { useIsomorphicEffect } from '@pancakeswap/uikit'
+import { usePreviousValue } from '@pancakeswap/hooks'
 import useLocalDispatch from 'contexts/LocalRedux/useLocalDispatch'
 import { useGetSortedRoundsCurrentEpoch } from 'state/predictions/hooks'
 import useSwiper from './useSwiper'
@@ -17,7 +17,7 @@ const useOnNextRound = () => {
   const previousEpoch = usePreviousValue(currentEpoch)
   const previousRoundsEpochsString = usePreviousValue(roundsEpochsString)
 
-  useLayoutEffect(() => {
+  useIsomorphicEffect(() => {
     if (
       swiper &&
       currentEpoch &&

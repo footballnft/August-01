@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import { ArrowDownIcon, ArrowUpIcon, Flex, Skeleton, Table, Td, Th } from '@pancakeswap/uikit'
 import { formatNumber } from 'utils/formatBalance'
 import CollapsibleCard from 'components/CollapsibleCard'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { SortType } from '../../types'
 import { StyledSortButton, TableWrapper } from './styles'
 import useGetCollectionDistribution from '../../hooks/useGetCollectionDistribution'
@@ -15,7 +15,7 @@ interface CollectionTraitsProps {
   collectionAddress: string
 }
 
-const CollectionTraits: React.FC<CollectionTraitsProps> = ({ collectionAddress }) => {
+const CollectionTraits: React.FC<React.PropsWithChildren<CollectionTraitsProps>> = ({ collectionAddress }) => {
   const { data, isFetching } = useGetCollectionDistribution(collectionAddress)
   const [raritySort, setRaritySort] = useState<Record<string, SortType>>({})
   const { t } = useTranslation()
@@ -58,14 +58,13 @@ const CollectionTraits: React.FC<CollectionTraitsProps> = ({ collectionAddress }
           const total = sum(Object.values(data[traitType]))
 
           // Parse the distribution values into an array to make it easier to sort
-          const traitValues: { value: string; count: number; rarity: number }[] = Object.keys(data[traitType]).reduce(
-            (accum, traitValue) => {
+          const traitValues: { value: string; count: number; rarity: number }[] = Object.keys(data[traitType]).map(
+            (traitValue) => {
               const count = data[traitType][traitValue]
               const rarity = (count / total) * 100
 
-              return [...accum, { value: traitValue, count, rarity }]
+              return { value: traitValue, count, rarity }
             },
-            [],
           )
           const sortType = raritySort[traitType] || 'desc'
 

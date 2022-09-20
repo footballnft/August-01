@@ -1,6 +1,6 @@
 import { memo, ReactNode } from 'react'
-import { Message, MessageText, Box, Flex, useMatchBreakpointsContext } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { Message, MessageText, Box, Flex, useMatchBreakpoints } from '@pancakeswap/uikit'
+import { useTranslation } from '@pancakeswap/localization'
 import Trans from 'components/Trans'
 import { VaultPosition } from 'utils/cakePool'
 
@@ -25,14 +25,14 @@ const msg: Record<VaultPosition, ReactNode> = {
   ),
 }
 
-const AfterLockedActions: React.FC<AfterLockedActionsPropsType> = ({
+const AfterLockedActions: React.FC<React.PropsWithChildren<AfterLockedActionsPropsType>> = ({
   currentLockedAmount,
   stakingToken,
   position,
   isInline,
 }) => {
   const { t } = useTranslation()
-  const { isDesktop } = useMatchBreakpointsContext()
+  const { isDesktop } = useMatchBreakpoints()
   const isDesktopView = isInline && isDesktop
   const Container = isDesktopView ? Flex : Box
 

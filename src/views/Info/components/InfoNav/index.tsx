@@ -1,12 +1,12 @@
 import { Box, ButtonMenu, ButtonMenuItem, Flex } from '@pancakeswap/uikit'
 import { NextLinkFromReactRouter } from 'components/NextLink'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { useRouter } from 'next/router'
 import styled from 'styled-components'
 import Search from 'views/Info/components/InfoSearch'
 
 const NavWrapper = styled(Flex)`
-  background: ${({ theme }) => theme.colors.gradients.cardHeader};
+  background: ${({ theme }) => theme.colors.gradientCardHeader};
   justify-content: space-between;
   padding: 20px 16px;
   flex-direction: column;
@@ -20,8 +20,9 @@ const NavWrapper = styled(Flex)`
 const InfoNav = () => {
   const { t } = useTranslation()
   const router = useRouter()
-  const isPools = router.asPath === '/info/pools'
-  const isTokens = router.asPath === '/info/tokens'
+
+  const isPools = router.pathname === '/info/pools'
+  const isTokens = router.pathname === '/info/tokens'
   let activeIndex = 0
   if (isPools) {
     activeIndex = 1

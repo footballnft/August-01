@@ -2,8 +2,7 @@ import { useMemo } from 'react'
 import { useRouter } from 'next/router'
 import { NextLinkFromReactRouter } from 'components/NextLink'
 import { Menu as UikitMenu } from '@pancakeswap/uikit'
-import { languageList } from 'config/localization/languages'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation, languageList } from '@pancakeswap/localization'
 import { NetworkSwitcher } from 'components/NetworkSwitcher'
 import useTheme from 'hooks/useTheme'
 import UserMenu from './UserMenu'
@@ -11,10 +10,11 @@ import { useMenuItems } from './hooks/useMenuItems'
 import GlobalSettings from './GlobalSettings'
 import { getActiveMenuItem, getActiveSubMenuItem } from './utils'
 import { footerLinks } from './config/footerConfig'
+import { SettingsMode } from './GlobalSettings/types'
 
 const Menu = (props) => {
   const { isDark, setTheme } = useTheme()
-  // const cakePriceUsd = usePriceCakeBusd()
+  // const cakePriceUsd = useCakeBusdPrice({ forceMainnet: true })
   const { currentLanguage, setLanguage, t } = useTranslation()
   const { pathname } = useRouter()
   // const [showPhishingWarningBanner] = usePhishingBannerManager()
@@ -33,13 +33,14 @@ const Menu = (props) => {
   }, [t])
 
   return (
+    <>
     <UikitMenu
       linkComponent={(linkProps) => {
         return <NextLinkFromReactRouter to={linkProps.href} {...linkProps} prefetch={false} />
       }}
       rightSide={
         <>
-          <GlobalSettings />
+          <GlobalSettings mode={SettingsMode.GLOBAL} />
           <NetworkSwitcher />
           <UserMenu />
         </>
@@ -50,7 +51,7 @@ const Menu = (props) => {
       currentLang={currentLanguage.code}
       langs={languageList}
       setLang={setLanguage}
-      // cakePriceUsd={cakePriceUsd.toNumber()}
+      // cakePriceUsd={cakePriceUsd}
       links={menuItems}
       subLinks={activeMenuItem?.hideSubNav || activeSubMenuItem?.hideSubNav ? [] : activeMenuItem?.items}
       footerLinks={getFooterLinks}
@@ -59,6 +60,7 @@ const Menu = (props) => {
       // buyCakeLabel={t('Buy CAKE')}
       {...props}
     />
+    </>
   )
 }
 

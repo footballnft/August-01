@@ -1,6 +1,6 @@
 import styled from 'styled-components'
-import { Box, Flex, Text, Heading, Link, Image, useMatchBreakpointsContext } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { Box, Flex, Text, Heading, Link, Image, useMatchBreakpoints } from '@pancakeswap/uikit'
+import { useTranslation } from '@pancakeswap/localization'
 import useTheme from 'hooks/useTheme'
 import { BallWithNumber, MatchExampleA, MatchExampleB, PoolAllocationChart } from '../svgs'
 
@@ -56,7 +56,7 @@ const StepCardInner = styled(Box)`
 
 type Step = { title: string; subtitle: string; label: string }
 
-const StepCard: React.FC<{ step: Step }> = ({ step }) => {
+const StepCard: React.FC<React.PropsWithChildren<{ step: Step }>> = ({ step }) => {
   return (
     <StyledStepCard width="100%">
       <StepCardInner height={['200px', '180px', null, '200px']}>
@@ -91,7 +91,7 @@ const InlineLink = styled(Link)`
 `
 
 const ExampleBalls = () => {
-  const { isDesktop } = useMatchBreakpointsContext()
+  const { isDesktop } = useMatchBreakpoints()
   const ballSize = isDesktop ? '24px' : '32px'
   const fontSize = isDesktop ? '14px' : '16px'
   return (
@@ -113,7 +113,7 @@ const MatchExampleContainer = styled(Flex)`
 
 const MatchExampleCard = () => {
   const { isDark } = useTheme()
-  const { isXs } = useMatchBreakpointsContext()
+  const { isXs } = useMatchBreakpoints()
   const { t } = useTranslation()
   const exampleWidth = isXs ? '210px' : '258px'
   return (
@@ -154,7 +154,7 @@ const AllocationColorCircle = styled.div<{ color: string }>`
   background-color: ${({ color }) => color};
 `
 
-const AllocationMatch: React.FC<{ color: string; text: string }> = ({ color, text }) => {
+const AllocationMatch: React.FC<React.PropsWithChildren<{ color: string; text: string }>> = ({ color, text }) => {
   return (
     <Flex alignItems="center">
       <AllocationColorCircle color={color} />
@@ -218,7 +218,7 @@ const GappedFlex = styled(Flex)`
   gap: 24px;
 `
 
-const HowToPlay: React.FC = () => {
+const HowToPlay: React.FC<React.PropsWithChildren> = () => {
   const { t } = useTranslation()
 
   const steps: Step[] = [

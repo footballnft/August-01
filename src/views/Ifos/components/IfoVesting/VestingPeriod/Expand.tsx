@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router'
 import styled, { keyframes, css } from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { Box, Text } from '@pancakeswap/uikit'
 import { VestingData } from 'views/Ifos/hooks/vesting/fetchUserWalletIfoData'
 import { PoolIds } from 'config/constants/types'
@@ -29,6 +29,8 @@ const collapseAnimation = keyframes`
 `
 
 const StyledExpand = styled(Box)<{ expanded: boolean }>`
+  position: relative;
+  z-index: 0;
   opacity: 1;
   animation: ${({ expanded }) =>
     expanded
@@ -50,7 +52,7 @@ interface ExpandProps {
   fetchUserVestingData: () => void
 }
 
-const Expand: React.FC<ExpandProps> = ({ data, expanded, fetchUserVestingData }) => {
+const Expand: React.FC<React.PropsWithChildren<ExpandProps>> = ({ data, expanded, fetchUserVestingData }) => {
   const { t } = useTranslation()
   const { token } = data.ifo
   const router = useRouter()

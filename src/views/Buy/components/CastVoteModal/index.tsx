@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import { Box, Modal } from '@pancakeswap/uikit'
-import { useWeb3React } from '@web3-react/core'
-import { useTranslation } from 'contexts/Localization'
+import { Box, Modal, useToast } from '@pancakeswap/uikit'
+import { useWeb3React, useSignMessage } from '@pancakeswap/wagmi'
+import { useTranslation } from '@pancakeswap/localization'
 import { SnapshotCommand } from 'state/types'
-import { useSignMessage } from 'utils/web3React'
-import useToast from 'hooks/useToast'
 import useTheme from 'hooks/useTheme'
 import { CastVoteModalProps, ConfirmVoteView } from './types'
 import MainView from './MainView'
@@ -12,7 +10,13 @@ import DetailsView from './DetailsView'
 import { generatePayloadData, Message, sendSnapshotData } from '../../helpers'
 import useGetVotingPower from '../../hooks/useGetVotingPower'
 
-const CastVoteModal: React.FC<CastVoteModalProps> = ({ onSuccess, proposalId, vote, block, onDismiss }) => {
+const CastVoteModal: React.FC<React.PropsWithChildren<CastVoteModalProps>> = ({
+  onSuccess,
+  proposalId,
+  vote,
+  block,
+  onDismiss,
+}) => {
   const [view, setView] = useState<ConfirmVoteView>(ConfirmVoteView.MAIN)
   const [modalIsOpen, setModalIsOpen] = useState(true)
   const [isPending, setIsPending] = useState(false)
@@ -31,6 +35,8 @@ const CastVoteModal: React.FC<CastVoteModalProps> = ({ onSuccess, proposalId, vo
     poolsBalance,
     cakeBnbLpBalance,
     ifoPoolBalance,
+    lockedCakeBalance,
+    lockedEndTime,
   } = useGetVotingPower(block, modalIsOpen)
 
   const isStartView = view === ConfirmVoteView.MAIN
@@ -82,7 +88,7 @@ const CastVoteModal: React.FC<CastVoteModalProps> = ({ onSuccess, proposalId, vo
       onBack={handleBack}
       onDismiss={onDismiss}
       hideCloseButton={!isStartView}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
     >
       <Box mb="24px">
         {view === ConfirmVoteView.MAIN && (
@@ -92,6 +98,8 @@ const CastVoteModal: React.FC<CastVoteModalProps> = ({ onSuccess, proposalId, vo
             isLoading={isLoading}
             isPending={isPending}
             total={total}
+            lockedCakeBalance={lockedCakeBalance}
+            lockedEndTime={lockedEndTime}
             onConfirm={handleConfirmVote}
             onViewDetails={handleViewDetails}
             onDismiss={handleDismiss}
@@ -107,6 +115,8 @@ const CastVoteModal: React.FC<CastVoteModalProps> = ({ onSuccess, proposalId, vo
             poolsBalance={poolsBalance}
             cakeBnbLpBalance={cakeBnbLpBalance}
             block={block}
+            lockedCakeBalance={lockedCakeBalance}
+            lockedEndTime={lockedEndTime}
           />
         )}
       </Box>

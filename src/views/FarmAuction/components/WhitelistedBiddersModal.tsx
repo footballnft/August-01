@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import styled from 'styled-components'
-import { Modal, Box, Text, Flex, Input, OpenNewIcon, Spinner, useMatchBreakpoints } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { Modal, Box, Text, Flex, Input, OpenNewIcon, Spinner, useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { useTranslation } from '@pancakeswap/localization'
 import useTheme from 'hooks/useTheme'
 import { FarmAuctionBidderConfig } from 'config/constants/types'
-import truncateHash from 'utils/truncateHash'
+import truncateHash from '@pancakeswap/utils/truncateHash'
 import useWhitelistedAddresses from '../hooks/useWhitelistedAddresses'
 
 interface WhitelistedBiddersModalProps {
@@ -32,7 +32,10 @@ const AddressRowContainer = styled.div`
   }
 `
 
-const AddressRow: React.FC<{ bidder: FarmAuctionBidderConfig; isMobile: boolean }> = ({ bidder, isMobile }) => {
+const AddressRow: React.FC<React.PropsWithChildren<{ bidder: FarmAuctionBidderConfig; isMobile: boolean }>> = ({
+  bidder,
+  isMobile,
+}) => {
   const { farmName, tokenName, account, projectSite } = bidder
   return (
     <a href={projectSite} target="_blank" rel="noopener noreferrer">
@@ -52,11 +55,11 @@ const AddressRow: React.FC<{ bidder: FarmAuctionBidderConfig; isMobile: boolean 
   )
 }
 
-const WhitelistedBiddersModal: React.FC<WhitelistedBiddersModalProps> = ({ onDismiss }) => {
+const WhitelistedBiddersModal: React.FC<React.PropsWithChildren<WhitelistedBiddersModalProps>> = ({ onDismiss }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const { t } = useTranslation()
   const { theme } = useTheme()
-  const { isMobile } = useMatchBreakpoints()
+  const { isMobile } = useMatchBreakpointsContext()
   const bidders = useWhitelistedAddresses()
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +88,7 @@ const WhitelistedBiddersModal: React.FC<WhitelistedBiddersModalProps> = ({ onDis
       p="0"
       title={t('All Whitelisted Project Wallets')}
       onDismiss={onDismiss}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
     >
       <InputContainer py="16px" px="24px">
         <Input placeholder={t('Search address or token')} value={searchTerm} onChange={handleSearchChange} />

@@ -1,12 +1,12 @@
 import React from 'react'
 import styled, { keyframes, css } from 'styled-components'
-import Multiplier from 'views/Migration/components/MigrationStep1/OldFarm/ActionPanel/Multiplier'
-import Liquidity from 'views/Migration/components/MigrationStep1/OldFarm/ActionPanel/Liquidity'
-import { EarnedProps } from 'views/Migration/components/MigrationStep1/OldFarm/Cells/Earned'
-import { FarmProps } from 'views/Migration/components/MigrationStep1/OldFarm/Cells/Farm'
+import Multiplier from 'views/Migration/components/Farm/ActionPanel/Multiplier'
+import Liquidity from 'views/Migration/components/Farm/ActionPanel/Liquidity'
+import { EarnedProps } from 'views/Migration/components/Farm/Cells/Earned'
+import { FarmProps } from 'views/Migration/components/Farm/Cells/Farm'
 import { AprProps } from 'views/Farms/components/FarmTable/Apr'
-import { MultiplierProps } from 'views/Migration/components/MigrationStep1/OldFarm/Cells/Multiplier'
-import { LiquidityProps } from 'views/Migration/components/MigrationStep1/OldFarm/Cells/Liquidity'
+import { MultiplierProps } from 'views/Migration/components/Farm/Cells/Multiplier'
+import { LiquidityProps } from 'views/Migration/components/Farm/Cells/Liquidity'
 import Staked from './Staked'
 import AprRow from './AprRow'
 
@@ -77,7 +77,14 @@ interface ActionPanelProps {
   liquidity: LiquidityProps
 }
 
-const ActionPanel: React.FC<ActionPanelProps> = ({ expanded, earned, farm, apr, multiplier, liquidity }) => {
+const ActionPanel: React.FC<React.PropsWithChildren<ActionPanelProps>> = ({
+  expanded,
+  earned,
+  farm,
+  apr,
+  multiplier,
+  liquidity,
+}) => {
   return (
     <StyledActionPanel expanded={expanded}>
       <ActionContainer>

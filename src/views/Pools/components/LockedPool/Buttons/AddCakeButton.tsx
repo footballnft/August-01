@@ -1,12 +1,12 @@
 import { useCallback, memo } from 'react'
 import { Button, useModal, Skeleton } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { usePool } from 'state/pools/hooks'
 import AddAmountModal from '../Modals/AddAmountModal'
 import { AddButtonProps } from '../types'
 import NotEnoughTokensModal from '../../PoolCard/Modals/NotEnoughTokensModal'
 
-const AddCakeButton: React.FC<AddButtonProps> = ({
+const AddCakeButton: React.FC<React.PropsWithChildren<AddButtonProps>> = ({
   currentBalance,
   stakingToken,
   currentLockedAmount,
@@ -41,7 +41,7 @@ const AddCakeButton: React.FC<AddButtonProps> = ({
   }, [currentBalance, openAddAmountModal, onPresentTokenRequired])
 
   return userDataLoaded ? (
-    <Button onClick={handleClicked} width="100%">
+    <Button onClick={handleClicked} width="100%" style={{ whiteSpace: 'nowrap', paddingLeft: 0, paddingRight: 0 }}>
       {t('Add CAKE')}
     </Button>
   ) : (

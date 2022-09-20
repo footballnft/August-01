@@ -1,8 +1,8 @@
 import styled from 'styled-components'
 import { Flex, Heading, Text } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import ConnectWalletButton from 'components/ConnectWalletButton'
-import { useWeb3React } from '@web3-react/core'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import SunburstSvg from './SunburstSvg'
 
 

@@ -1,19 +1,18 @@
+import { useTranslation } from '@pancakeswap/localization'
+import { Button, ButtonProps, useToast } from '@pancakeswap/uikit'
 import { memo, useCallback } from 'react'
-import { Button, ButtonProps } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
 
-import { useAppDispatch } from 'state'
-import { fetchCakeVaultUserData } from 'state/pools'
-import useToast from 'hooks/useToast'
-import useCatchTxError from 'hooks/useCatchTxError'
-import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
-import { useVaultPoolContract } from 'hooks/useContract'
-import { useWeb3React } from '@web3-react/core'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import { ToastDescriptionWithTx } from 'components/Toast'
 import { vaultPoolConfig } from 'config/constants/pools'
+import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
+import useCatchTxError from 'hooks/useCatchTxError'
+import { useVaultPoolContract } from 'hooks/useContract'
+import { useAppDispatch } from 'state'
+import { fetchCakeVaultUserData } from 'state/pools'
 import { VaultKey } from 'state/types'
 
-const ConvertToFlexibleButton: React.FC<ButtonProps> = (props) => {
+const ConvertToFlexibleButton: React.FC<React.PropsWithChildren<ButtonProps>> = (props) => {
   const dispatch = useAppDispatch()
 
   const { account } = useWeb3React()

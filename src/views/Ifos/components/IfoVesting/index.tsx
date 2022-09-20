@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import Trans from 'components/Trans'
 import { Box, Card, CardBody, CardHeader, Flex, Text, Image } from '@pancakeswap/uikit'
@@ -23,9 +23,12 @@ const StyleVestingCard = styled(Card)`
 `
 
 const VestingCardBody = styled(CardBody)`
+  position: relative;
+  z-index: 2;
   overflow-y: auto;
   max-height: 570px;
   padding-bottom: 0;
+  border-radius: 0 0 24px 24px;
 `
 
 const TokenInfoContainer = styled.div`
@@ -60,7 +63,7 @@ interface IfoVestingProps {
   pool: DeserializedPool
 }
 
-const IfoVesting: React.FC<IfoVestingProps> = () => {
+const IfoVesting: React.FC<React.PropsWithChildren<IfoVestingProps>> = () => {
   const { t } = useTranslation()
   const { account } = useActiveWeb3React()
   const [isFirstTime, setIsFirstTime] = useState(true)

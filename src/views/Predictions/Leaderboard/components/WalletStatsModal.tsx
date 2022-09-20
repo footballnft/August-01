@@ -12,16 +12,16 @@ import {
   ProfileAvatar,
   Skeleton,
   Heading,
-  useMatchBreakpointsContext,
+  useMatchBreakpoints,
 } from '@pancakeswap/uikit'
 import { useProfileForAddress } from 'state/profile/hooks'
 import useTheme from 'hooks/useTheme'
 import styled from 'styled-components'
-import { getBscScanLink } from 'utils'
-import truncateHash from 'utils/truncateHash'
+import { getBlockExploreLink } from 'utils'
+import truncateHash from '@pancakeswap/utils/truncateHash'
 import { Token } from '@pancakeswap/sdk'
 
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { FetchStatus } from 'config/constants/types'
 import { PredictionUser } from 'state/types'
 import { NetWinningsView } from './Results/styles'
@@ -46,7 +46,7 @@ const ExternalLink = styled(LinkExternal)`
   }
 `
 
-const WalletStatsModal: React.FC<WalletStatsModalProps> = ({
+const WalletStatsModal: React.FC<React.PropsWithChildren<WalletStatsModalProps>> = ({
   result,
   address,
   leaderboardLoadingState,
@@ -59,7 +59,7 @@ const WalletStatsModal: React.FC<WalletStatsModalProps> = ({
   const { theme } = useTheme()
   const { profile } = useProfileForAddress(address)
   const isLoading = leaderboardLoadingState === FetchStatus.Fetching
-  const { isDesktop } = useMatchBreakpointsContext()
+  const { isDesktop } = useMatchBreakpoints()
 
   const handleDismiss = () => {
     if (onBeforeDismiss) {
@@ -70,8 +70,8 @@ const WalletStatsModal: React.FC<WalletStatsModalProps> = ({
   }
 
   return (
-    <ModalContainer minWidth="320px">
-      <ModalHeader background={theme.colors.gradients.bubblegum}>
+    <ModalContainer $minWidth="320px">
+      <ModalHeader background={theme.colors.gradientBubblegum}>
         <Flex alignItems="center" style={{ flex: 1 }}>
           <Box width={['64px', null, null, null, null, null, '96px']} mr="16px">
             <ProfileAvatar src={profile?.nft?.image?.thumbnail} height={96} width={96} />
@@ -82,7 +82,7 @@ const WalletStatsModal: React.FC<WalletStatsModalProps> = ({
                 {profile?.username}
               </Heading>
             )}
-            <ExternalLink href={getBscScanLink(address, 'address')}>{truncateHash(address)}</ExternalLink>
+            <ExternalLink href={getBlockExploreLink(address, 'address')}>{truncateHash(address)}</ExternalLink>
           </Box>
         </Flex>
         <IconButton variant="text" onClick={handleDismiss} aria-label="Close the dialog">

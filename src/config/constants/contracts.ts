@@ -1,7 +1,10 @@
+import { multicallAddresses } from '@pancakeswap/multicall'
+
 export default {
   masterChef: {
-    97: '',
+    97: '0xB4A466911556e39210a6bB2FaECBB59E4eB7E43d',
     56: '0xa5f8C5Dbd5F286960b9d90548680aE5ebFf07652',
+    5: '0x8CB958bBdb45597cc918147469eb650A9397aBDA',
   },
   masterChefV1: {
     97: '0x1d32c2945C8FDCBc7156c553B7cEa4325a17f4f9',
@@ -15,11 +18,7 @@ export default {
     97: '0x5790c3534F30437641541a0FA04C992799602998',
     56: '0x5aF6D33DE2ccEC94efb1bDF8f92Bd58085432d2c',
   },
-  // TODO: multi
-  multiCall: {
-    56: '0xfF6FD90A470Aaa0c1B8A54681746b07AcdFedc9B',
-    97: '0x8F3273Fb89B075b1645095ABaC6ed17B2d4Bc576',
-  },
+  multiCall: multicallAddresses,
   pancakeProfile: {
     56: '0xDf4dBf6536201370F95e06A0F8a7a70fE40E388a',
     97: '0x4B683C7E13B6d5D7fd1FeA9530F451954c1A7c8A',
@@ -66,7 +65,7 @@ export default {
   },
   cakeVault: {
     56: '0x45c54210128a065de780C4B0Df3d16664f7f859e',
-    97: '',
+    97: '0x683433ba14e8F26774D43D3E90DA6Dd7a22044Fe',
   },
   cakeFlexibleSideVault: {
     56: '0x615e896A8C2CA8470A2e9dc2E9552998f8658Ea0',
@@ -128,6 +127,10 @@ export default {
     56: '0x0a8901b0E25DEb55A87524f0cC164E9644020EBA',
     97: '0xfC0c3F11fDA72Cb9A56F28Ec8D44C0ae4B3ABF86',
   },
+  potteryDraw: {
+    56: '0x01871991587d5671f3A2d4E2BcDC22F4E026396e',
+    97: '0xDB9D365b50E62fce747A90515D2bd1254A16EbB9',
+  },
   // TODO: multi
   zap: {
     56: '0xD4c4a7C55c9f7B3c48bafb6E8643Ba79F42418dF',
@@ -135,6 +138,14 @@ export default {
   },
   iCake: {
     56: '0x3C458828D1622F5f4d526eb0d24Da8C4Eb8F07b1',
+    97: '',
+  },
+  bCakeFarmBooster: {
+    56: '0xE4FAa3Ef5A9708C894435B0F39c2B440936A3A52',
+    97: '',
+  },
+  bCakeFarmBoosterProxyFactory: {
+    56: '0x2C36221bF724c60E9FEE3dd44e2da8017a8EF3BA',
     97: '',
   },
 }

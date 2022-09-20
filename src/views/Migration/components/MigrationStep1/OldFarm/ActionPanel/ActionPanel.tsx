@@ -2,12 +2,12 @@ import React from 'react'
 import styled, { keyframes, css } from 'styled-components'
 import Staked from './Staked'
 import Earned from './Earned'
-import Multiplier from './Multiplier'
-import Liquidity from './Liquidity'
-import { EarnedProps } from '../Cells/Earned'
-import { FarmProps } from '../Cells/Farm'
-import { MultiplierProps } from '../Cells/Multiplier'
-import { LiquidityProps } from '../Cells/Liquidity'
+import Multiplier from '../../../Farm/ActionPanel/Multiplier'
+import Liquidity from '../../../Farm/ActionPanel/Liquidity'
+import { EarnedProps } from '../../../Farm/Cells/Earned'
+import { FarmProps } from '../../../Farm/Cells/Farm'
+import { MultiplierProps } from '../../../Farm/Cells/Multiplier'
+import { LiquidityProps } from '../../../Farm/Cells/Liquidity'
 
 const expandAnimation = keyframes`
   from {
@@ -75,7 +75,13 @@ interface ActionPanelProps {
   liquidity: LiquidityProps
 }
 
-const ActionPanel: React.FC<ActionPanelProps> = ({ expanded, earned, farm, multiplier, liquidity }) => {
+const ActionPanel: React.FC<React.PropsWithChildren<ActionPanelProps>> = ({
+  expanded,
+  earned,
+  farm,
+  multiplier,
+  liquidity,
+}) => {
   return (
     <StyledActionPanel expanded={expanded}>
       <ActionContainer>

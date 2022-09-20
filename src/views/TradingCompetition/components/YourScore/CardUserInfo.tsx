@@ -1,4 +1,4 @@
-import { ReactText, ReactNode } from 'react'
+import { ReactNode } from 'react'
 import {
   Text,
   Heading,
@@ -14,7 +14,7 @@ import {
   useModal,
 } from '@pancakeswap/uikit'
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { REGISTRATION, LIVE } from 'config/constants/trading-competition/phases'
 import { YourScoreProps } from '../../types'
 import UserRankBox from './UserRankBox'
@@ -44,7 +44,7 @@ interface CardUserInfoProps extends YourScoreProps {
   extraUserRankBox?: ReactNode
 }
 
-const CardUserInfo: React.FC<CardUserInfoProps> = ({
+const CardUserInfo: React.FC<React.PropsWithChildren<CardUserInfoProps>> = ({
   shareModal,
   extraUserRankBox,
   hasRegistered,
@@ -58,7 +58,7 @@ const CardUserInfo: React.FC<CardUserInfoProps> = ({
   const { global, team, volume, next_rank: nextRank } = userLeaderboardInformation
   const shouldShowUserRanks = account && hasRegistered
 
-  const getMedal = (currentRank: ReactText) => {
+  const getMedal = (currentRank: string | number) => {
     if (currentRank === 1) {
       return {
         current: <MedalGoldIcon />,
@@ -95,7 +95,7 @@ const CardUserInfo: React.FC<CardUserInfoProps> = ({
     }
   }
 
-  const getNextTier = (currentRank: ReactText) => {
+  const getNextTier = (currentRank: string | number) => {
     if (currentRank === 1) {
       return {
         color: null,

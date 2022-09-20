@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import { Box, Flex, Text } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import useLocalDispatch from 'contexts/LocalRedux/useLocalDispatch'
 import { setLeaderboardFilter } from 'state/predictions'
 import Select, { OptionProps } from 'components/Select/Select'
@@ -35,9 +35,9 @@ const Filters = () => {
   const { token } = useConfig()
 
   const orderByOptions = [
+    { label: t('Rounds Played'), value: 'totalBets' },
     { label: t('Net Winnings'), value: `net${token.symbol}` },
     { label: t('Total %symbol%', { symbol: token.symbol }), value: `total${token.symbol}` },
-    { label: t('Rounds Played'), value: 'totalBets' },
     { label: t('Win Rate'), value: 'winRate' },
   ]
 

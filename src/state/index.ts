@@ -1,54 +1,24 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-import {
-  FLUSH,
-  PAUSE,
-  PERSIST,
-  persistReducer,
-  persistStore,
-  PURGE,
-  REGISTER,
-  REHYDRATE,
-  createMigrate,
-} from 'redux-persist'
+import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
-import IndexedDBStorage from 'utils/IndexedDBStorage'
 import burn from './burn/reducer'
 import farmsReducer from './farms'
 import farmsReducerV1 from './farmsV1'
 import { updateVersion } from './global/actions'
 import infoReducer from './info'
-import lists from './lists/reducer'
 import lotteryReducer from './lottery'
 import mint from './mint/reducer'
 import multicall from './multicall/reducer'
-import nftMarketReducer from './nftMarket/reducer'
 import poolsReducer from './pools'
 import swap from './swap/reducer'
 import transactions from './transactions/reducer'
 import user from './user/reducer'
 import limitOrders from './limitOrders/reducer'
+import potteryReducer from './pottery'
 
 const PERSISTED_KEYS: string[] = ['user', 'transactions']
-
-const migrations = {
-  0: (state) => {
-    // migration add userPredictionChainlinkChartDisclaimerShow
-    return {
-      ...state,
-      user: {
-        ...state?.user,
-        userPredictionChainlinkChartDisclaimerShow: true,
-      },
-    }
-  },
-  1: (state) => {
-    return {
-      ...state,
-    }
-  },
-}
 
 const persistConfig = {
   key: 'primary',
@@ -56,15 +26,6 @@ const persistConfig = {
   blacklist: ['profile'],
   storage,
   version: 1,
-  migrate: createMigrate(migrations, { debug: false }),
-}
-
-const ListsConfig = {
-  key: 'lists',
-  version: 1,
-  serialize: false,
-  deserialize: false,
-  storage: IndexedDBStorage('lists'),
 }
 
 const persistedReducer = persistReducer(
@@ -75,7 +36,7 @@ const persistedReducer = persistReducer(
     pools: poolsReducer,
     lottery: lotteryReducer,
     info: infoReducer,
-    nftMarket: nftMarketReducer,
+    pottery: potteryReducer,
 
     limitOrders,
 
@@ -86,7 +47,6 @@ const persistedReducer = persistReducer(
     mint,
     burn,
     multicall,
-    lists: persistReducer(ListsConfig, lists),
   }),
 )
 

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { Flex, Text, Progress, Tag } from '@pancakeswap/uikit'
 import { VestingData } from 'views/Ifos/hooks/vesting/fetchUserWalletIfoData'
 import { PoolIds } from 'config/constants/types'
@@ -18,7 +18,7 @@ const WhiteCard = styled.div`
 const StyleTag = styled(Tag)<{ isPrivate: boolean }>`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.text};
-  background: ${({ theme, isPrivate }) => (isPrivate ? theme.colors.gradients.blue : theme.colors.gradients.violet)};
+  background: ${({ theme, isPrivate }) => (isPrivate ? theme.colors.gradientBlue : theme.colors.gradientViolet)};
 `
 
 interface InfoProps {
@@ -27,7 +27,7 @@ interface InfoProps {
   fetchUserVestingData: () => void
 }
 
-const Info: React.FC<InfoProps> = ({ poolId, data, fetchUserVestingData }) => {
+const Info: React.FC<React.PropsWithChildren<InfoProps>> = ({ poolId, data, fetchUserVestingData }) => {
   const { t } = useTranslation()
   const { token } = data.ifo
   const { vestingComputeReleasableAmount, offeringAmountInToken, vestingInformationPercentage, vestingReleased } =

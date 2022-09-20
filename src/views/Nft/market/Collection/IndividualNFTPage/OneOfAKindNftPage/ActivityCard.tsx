@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react'
-import {
-  Flex,
-  Card,
-  Text,
-  Table,
-  Th,
-  ArrowBackIcon,
-  ArrowForwardIcon,
-  useMatchBreakpointsContext,
-} from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { Flex, Card, Text, Table, Th, ArrowBackIcon, ArrowForwardIcon, useMatchBreakpoints } from '@pancakeswap/uikit'
+import { useTranslation } from '@pancakeswap/localization'
 import useTheme from 'hooks/useTheme'
 import { Activity, NftToken } from 'state/nftMarket/types'
 import { useBNBBusdPrice } from 'hooks/useBUSDPrice'
@@ -27,7 +18,7 @@ interface ActivityCardProps {
 
 const MAX_PER_PAGE = 5
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ nft }) => {
+const ActivityCard: React.FC<React.PropsWithChildren<ActivityCardProps>> = ({ nft }) => {
   const dispatch = useAppDispatch()
   const { theme } = useTheme()
   const { t } = useTranslation()
@@ -37,7 +28,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ nft }) => {
   const [sortedTokenActivities, setSortedTokenActivities] = useState<Activity[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const bnbBusdPrice = useBNBBusdPrice()
-  const { isXs, isSm } = useMatchBreakpointsContext()
+  const { isXs, isSm } = useMatchBreakpoints()
 
   useEffect(() => {
     const fetchTokenActivity = async () => {

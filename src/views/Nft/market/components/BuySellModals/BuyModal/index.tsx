@@ -1,28 +1,27 @@
-import { useEffect, useState } from 'react'
-import { InjectedModalProps } from '@pancakeswap/uikit'
 import { MaxUint256, Zero } from '@ethersproject/constants'
-import useTheme from 'hooks/useTheme'
-import { useTranslation, TranslateFunction } from 'contexts/Localization'
-import useTokenBalance, { useGetBnbBalance } from 'hooks/useTokenBalance'
-import { getBalanceNumber } from 'utils/formatBalance'
-import { ethersToBigNumber } from 'utils/bigNumber'
-import { bscTokens } from 'config/constants/tokens'
+import { formatEther, parseUnits } from '@ethersproject/units'
+import { TranslateFunction, useTranslation } from '@pancakeswap/localization'
 import { ChainId } from '@pancakeswap/sdk'
-import { parseUnits, formatEther } from '@ethersproject/units'
-import { useERC20, useNftMarketContract } from 'hooks/useContract'
-import { useWeb3React } from '@web3-react/core'
-import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
-import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
-import { requiresApproval } from 'utils/requiresApproval'
-import useToast from 'hooks/useToast'
+import { bscTokens } from '@pancakeswap/tokens'
+import { InjectedModalProps, useToast } from '@pancakeswap/uikit'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import { ToastDescriptionWithTx } from 'components/Toast'
+import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
+import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
+import { useERC20, useNftMarketContract } from 'hooks/useContract'
+import useTheme from 'hooks/useTheme'
+import useTokenBalance, { useGetBnbBalance } from 'hooks/useTokenBalance'
+import { useEffect, useState } from 'react'
 import { NftToken } from 'state/nftMarket/types'
-import { StyledModal } from './styles'
-import ReviewStage from './ReviewStage'
-import ConfirmStage from '../shared/ConfirmStage'
+import { ethersToBigNumber } from 'utils/bigNumber'
+import { getBalanceNumber } from 'utils/formatBalance'
+import { requiresApproval } from 'utils/requiresApproval'
 import ApproveAndConfirmStage from '../shared/ApproveAndConfirmStage'
-import { PaymentCurrency, BuyingStage } from './types'
+import ConfirmStage from '../shared/ConfirmStage'
 import TransactionConfirmed from '../shared/TransactionConfirmed'
+import ReviewStage from './ReviewStage'
+import { StyledModal } from './styles'
+import { BuyingStage, PaymentCurrency } from './types'
 
 const modalTitles = (t: TranslateFunction) => ({
   [BuyingStage.REVIEW]: t('Review'),
@@ -38,7 +37,7 @@ interface BuyModalProps extends InjectedModalProps {
 // NFT WBNB in testnet contract is different
 const TESTNET_WBNB_NFT_ADDRESS = '0x094616f0bdfb0b526bd735bf66eca0ad254ca81f'
 
-const BuyModal: React.FC<BuyModalProps> = ({ nftToBuy, onDismiss }) => {
+const BuyModal: React.FC<React.PropsWithChildren<BuyModalProps>> = ({ nftToBuy, onDismiss }) => {
   const [stage, setStage] = useState(BuyingStage.REVIEW)
   const [confirmedTxHash, setConfirmedTxHash] = useState('')
   const [paymentCurrency, setPaymentCurrency] = useState<PaymentCurrency>(PaymentCurrency.BNB)
@@ -136,7 +135,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ nftToBuy, onDismiss }) => {
       stage={stage}
       onDismiss={onDismiss}
       onBack={showBackButton ? goBack : null}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
     >
       {stage === BuyingStage.REVIEW && (
         <ReviewStage

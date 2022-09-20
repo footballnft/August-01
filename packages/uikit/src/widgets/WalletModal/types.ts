@@ -1,20 +1,18 @@
 import { FC } from "react";
 import { SvgProps } from "../../components/Svg/types";
 
-export enum ConnectorNames {
-  Injected = "injected",
-  WalletConnect = "walletconnect",
-  BSC = "bsc",
-  Blocto = "blocto",
-  WalletLink = "coinbaseWallet",
-}
+export type Login<T> = (connectorId: T) => void;
 
-export type Login = (connectorId: ConnectorNames) => void;
-
-export interface Config {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export interface WalletConfig<T = {}> {
   title: string;
-  icon: FC<SvgProps>;
-  connectorId: ConnectorNames;
+  icon: FC<React.PropsWithChildren<SvgProps>>;
+  connectorId: T;
   priority: number | (() => number);
   href?: string;
+  installed?: boolean;
+  downloadLink?: {
+    desktop?: string;
+    mobile?: string;
+  };
 }

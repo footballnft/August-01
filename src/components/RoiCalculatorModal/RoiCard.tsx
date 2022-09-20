@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Box, Flex, Text, Input, CheckmarkIcon, PencilIcon, IconButton } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { CalculatorMode, RoiCalculatorReducerState } from './useRoiCalculatorReducer'
 
 const MILLION = 1000000
@@ -15,10 +15,10 @@ const RoiCardWrapper = styled(Box)`
 `
 
 const RoiCardInner = styled(Box)`
-  height: 120px;
+  min-height: 120px;
   padding: 24px;
   border-radius: ${({ theme }) => theme.radii.default};
-  background: ${({ theme }) => theme.colors.gradients.bubblegum};
+  background: ${({ theme }) => theme.colors.gradientBubblegum};
 `
 
 const RoiInputContainer = styled(Box)`
@@ -75,7 +75,12 @@ interface RoiCardProps {
   setCalculatorMode: (mode: CalculatorMode) => void
 }
 
-const RoiCard: React.FC<RoiCardProps> = ({ earningTokenSymbol, calculatorState, setTargetRoi, setCalculatorMode }) => {
+const RoiCard: React.FC<React.PropsWithChildren<RoiCardProps>> = ({
+  earningTokenSymbol,
+  calculatorState,
+  setTargetRoi,
+  setCalculatorMode,
+}) => {
   const [expectedRoi, setExpectedRoi] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
   const { roiUSD, roiTokens, roiPercentage } = calculatorState.data
@@ -155,9 +160,18 @@ const RoiCard: React.FC<RoiCardProps> = ({ earningTokenSymbol, calculatorState, 
           )}
         </Flex>
         <Text fontSize="12px" color="textSubtle">
-          ~ {roiTokens} {earningTokenSymbol} (
-          {roiPercentage.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          %)
+          ~ {roiTokens} {earningTokenSymbol}
+          <Text
+            fontSize="12px"
+            color="textSubtle"
+            ml="3px"
+            display="inline-block"
+            maxWidth="100%"
+            style={{ lineBreak: 'anywhere' }}
+          >
+            ({roiPercentage.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            %)
+          </Text>
         </Text>
       </RoiCardInner>
     </RoiCardWrapper>

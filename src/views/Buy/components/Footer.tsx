@@ -1,12 +1,12 @@
 import { Box, Button, Text, Heading, ProposalIcon, Flex } from '@pancakeswap/uikit'
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import Link from 'next/link'
 import Container from 'components/Layout/Container'
 import DesktopImage from './DesktopImage'
 
 const StyledFooter = styled(Box)`
-  background: ${({ theme }) => theme.colors.gradients.bubblegum};
+  background: ${({ theme }) => theme.colors.gradientBubblegum};
   padding-bottom: 32px;
   padding-top: 32px;
 `

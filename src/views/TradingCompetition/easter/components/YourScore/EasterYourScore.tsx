@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import ScoreHeader from '../../../components/YourScore/ScoreHeader'
 import RibbonWithImage from '../../../components/RibbonWithImage'
 import { YourScoreProps } from '../../../types'
@@ -16,7 +16,7 @@ const Wrapper = styled.div`
   max-width: 768px;
 `
 
-const EasterYourScore: React.FC<YourScoreProps> = ({
+const EasterYourScore: React.FC<React.PropsWithChildren<YourScoreProps>> = ({
   hasRegistered = false,
   account,
   userTradingInformation,
@@ -30,7 +30,7 @@ const EasterYourScore: React.FC<YourScoreProps> = ({
   onClaimSuccess,
 }) => {
   const { t } = useTranslation()
-  const showRibbon = !account || hasRegistered
+  const showRibbon = !account || isLoading || hasRegistered
 
   return (
     <Wrapper>

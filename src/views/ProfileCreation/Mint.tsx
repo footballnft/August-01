@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import { formatUnits } from '@ethersproject/units'
-import { Card, CardBody, Heading, Text } from '@pancakeswap/uikit'
-import { useWeb3React } from '@web3-react/core'
-import { useTranslation } from 'contexts/Localization'
+import { Card, CardBody, Heading, Text, useToast } from '@pancakeswap/uikit'
+import { useWeb3React } from '@pancakeswap/wagmi'
+import { useTranslation } from '@pancakeswap/localization'
 import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
 import { useCake, useBunnyFactory } from 'hooks/useContract'
 import { useGetCakeBalance } from 'hooks/useTokenBalance'
 import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
 import ApproveConfirmButtons from 'components/ApproveConfirmButtons'
-import useToast from 'hooks/useToast'
 import { getNftsFromCollectionApi } from 'state/nftMarket/helpers'
 import { ApiSingleTokenData } from 'state/nftMarket/types'
 import { pancakeBunniesAddress } from 'views/Nft/market/constants'
@@ -23,7 +22,7 @@ interface MintNftData extends ApiSingleTokenData {
   bunnyId?: string
 }
 
-const Mint: React.FC = () => {
+const Mint: React.FC<React.PropsWithChildren> = () => {
   const [selectedBunnyId, setSelectedBunnyId] = useState<string>('')
   const [starterNfts, setStarterNfts] = useState<MintNftData[]>([])
   const { actions, minimumCakeRequired, allowance } = useProfileCreation()

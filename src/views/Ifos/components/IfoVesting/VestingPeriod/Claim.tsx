@@ -1,12 +1,11 @@
-import { useCallback } from 'react'
-import { AutoRenewIcon, Button } from '@pancakeswap/uikit'
-import { PoolIds } from 'config/constants/types'
-import { useTranslation } from 'contexts/Localization'
-import useToast from 'hooks/useToast'
-import useCatchTxError from 'hooks/useCatchTxError'
+import { useTranslation } from '@pancakeswap/localization'
+import { AutoRenewIcon, Button, useToast } from '@pancakeswap/uikit'
 import { ToastDescriptionWithTx } from 'components/Toast'
-import { VestingData } from 'views/Ifos/hooks/vesting/fetchUserWalletIfoData'
+import { PoolIds } from 'config/constants/types'
+import useCatchTxError from 'hooks/useCatchTxError'
 import { useIfoV3Contract } from 'hooks/useContract'
+import { useCallback } from 'react'
+import { VestingData } from 'views/Ifos/hooks/vesting/fetchUserWalletIfoData'
 
 interface Props {
   poolId: PoolIds
@@ -15,7 +14,12 @@ interface Props {
   fetchUserVestingData: () => void
 }
 
-const ClaimButton: React.FC<Props> = ({ poolId, data, claimableAmount, fetchUserVestingData }) => {
+const ClaimButton: React.FC<React.PropsWithChildren<Props>> = ({
+  poolId,
+  data,
+  claimableAmount,
+  fetchUserVestingData,
+}) => {
   const { t } = useTranslation()
   const { toastSuccess } = useToast()
   const { address, token } = data.ifo

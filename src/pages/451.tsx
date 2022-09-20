@@ -1,6 +1,6 @@
-import styled from 'styled-components'
+import { useTranslation } from '@pancakeswap/localization'
 import { Text } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import styled from 'styled-components'
 
 const StyledNotFound = styled.div`
   align-items: center;
@@ -19,5 +19,7 @@ const NotSupport = () => {
     </StyledNotFound>
   )
 }
+
+NotSupport.pure = true
 
 export default NotSupport

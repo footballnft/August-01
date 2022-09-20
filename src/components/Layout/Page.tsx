@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { DEFAULT_META, getCustomMeta } from 'config/constants/meta'
@@ -21,13 +21,13 @@ const StyledPage = styled(Container)`
   }
 `
 
-export const PageMeta: React.FC<{ symbol?: string }> = ({ symbol }) => {
+export const PageMeta: React.FC<React.PropsWithChildren<{ symbol?: string }>> = ({ symbol }) => {
   const {
     t,
     currentLanguage: { locale },
   } = useTranslation()
   const { pathname } = useRouter()
-// const cakePriceUsd = useCakeBusdPrice()
+// const cakePriceUsd = useCakeBusdPrice({ forceMainnet: true })
 // const cakePriceUsdDisplay = cakePriceUsd ? `$${cakePriceUsd.toFixed(3)}` : '...'
 
   const pageMeta = getCustomMeta(pathname, t, locale) || {}
@@ -52,7 +52,7 @@ interface PageProps extends React.HTMLAttributes<HTMLDivElement> {
   symbol?: string
 }
 
-const Page: React.FC<PageProps> = ({ children, symbol, ...props }) => {
+const Page: React.FC<React.PropsWithChildren<PageProps>> = ({ children, symbol, ...props }) => {
   return (
     <>
       <PageMeta symbol={symbol} />

@@ -146,6 +146,10 @@ export const socials = [
         label: "",
         href: "",
       },
+      {
+        label: "",
+        href: "",
+      },
     ],
   },
   {

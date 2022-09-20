@@ -13,12 +13,10 @@ import {
   SearchIcon,
   CloseIcon,
 } from '@pancakeswap/uikit'
-import { FetchStatus } from 'config/constants/types'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import orderBy from 'lodash/orderBy'
-import { useAppDispatch } from 'state'
-import { useGetNftFilterLoadingState, useGetNftFilters } from 'state/nftMarket/hooks'
-import { filterNftsFromCollection } from 'state/nftMarket/reducer'
+import { useGetNftFilters } from 'state/nftMarket/hooks'
+import { useNftStorage } from 'state/nftMarket/storage'
 import styled from 'styled-components'
 import { Item } from './types'
 import { FilterButton, ListOrderState, SearchWrapper } from '../ListFilter/styles'
@@ -46,16 +44,20 @@ const CloseButton = styled(IconButton)`
   border-bottom-left-radius: 0;
 `
 
-export const ListTraitFilter: React.FC<ListTraitFilterProps> = ({ title, traitType, items, collectionAddress }) => {
+export const ListTraitFilter: React.FC<React.PropsWithChildren<ListTraitFilterProps>> = ({
+  title,
+  traitType,
+  items,
+  collectionAddress,
+}) => {
   const { t } = useTranslation()
+  const { updateItemFilters } = useNftStorage()
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [orderState, setOrderState] = useState<ListOrderState>({ orderKey: 'count', orderDir: 'asc' })
   const wrapperRef = useRef(null)
   const menuRef = useRef(null)
   const nftFilters = useGetNftFilters(collectionAddress)
-  const nftFilterState = useGetNftFilterLoadingState(collectionAddress)
-  const dispatch = useAppDispatch()
   const { orderKey, orderDir } = orderState
 
   const traitFilter = nftFilters[traitType]
@@ -71,12 +73,10 @@ export const ListTraitFilter: React.FC<ListTraitFilterProps> = ({ title, traitTy
 
     delete newFilters[traitType]
 
-    dispatch(
-      filterNftsFromCollection({
-        collectionAddress,
-        nftFilters: newFilters,
-      }),
-    )
+    updateItemFilters({
+      collectionAddress,
+      nftFilters: newFilters,
+    })
   }
 
   const handleMenuClick = () => setIsOpen(!isOpen)
@@ -87,12 +87,10 @@ export const ListTraitFilter: React.FC<ListTraitFilterProps> = ({ title, traitTy
   }
 
   const handleItemSelect = ({ attr }: Item) => {
-    dispatch(
-      filterNftsFromCollection({
-        collectionAddress,
-        nftFilters: { ...nftFilters, [traitType]: attr },
-      }),
-    )
+    updateItemFilters({
+      collectionAddress,
+      nftFilters: { ...nftFilters, [traitType]: attr },
+    })
   }
 
   const toggleSort = (newOrderKey: string) => () => {
@@ -141,7 +139,6 @@ export const ListTraitFilter: React.FC<ListTraitFilterProps> = ({ title, traitTy
               onClick={handleMenuClick}
               variant={isTraitSelected ? 'subtle' : 'light'}
               scale="sm"
-              disabled={nftFilterState === FetchStatus.Fetching}
               hasItem={isTraitSelected}
             >
               {title}
@@ -203,12 +200,7 @@ export const ListTraitFilter: React.FC<ListTraitFilterProps> = ({ title, traitTy
         </InlineMenu>
       </Box>
       {isTraitSelected && (
-        <CloseButton
-          variant={isTraitSelected ? 'subtle' : 'light'}
-          scale="sm"
-          onClick={handleClearItem}
-          disabled={nftFilterState === FetchStatus.Fetching}
-        >
+        <CloseButton variant={isTraitSelected ? 'subtle' : 'light'} scale="sm" onClick={handleClearItem}>
           <CloseIcon color="currentColor" width="18px" />
         </CloseButton>
       )}

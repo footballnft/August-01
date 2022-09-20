@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import { useWeb3React } from '@web3-react/core'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import { useCakeVault, usePoolsWithVault } from 'state/pools/hooks'
 import { useFastRefreshEffect } from 'hooks/useRefreshEffect'
 import { useAppDispatch } from 'state'
@@ -16,7 +16,7 @@ import {
 import { batch } from 'react-redux'
 import PoolsTable from './PoolTable'
 
-const NewPool: React.FC = () => {
+const NewPool: React.FC<React.PropsWithChildren> = () => {
   const { account } = useWeb3React()
   const { pools } = usePoolsWithVault()
   const cakeVault = useCakeVault()

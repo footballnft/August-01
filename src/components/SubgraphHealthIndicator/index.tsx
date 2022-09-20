@@ -1,11 +1,9 @@
 import { BSC_BLOCK_TIME } from 'config'
-import { useTranslation } from 'contexts/Localization'
-import { TranslateFunction } from 'contexts/Localization/types'
+import { useTranslation, TranslateFunction } from '@pancakeswap/localization'
 import styled from 'styled-components'
 import { Card, Flex, Box, InfoIcon, Text, useTooltip } from '@pancakeswap/uikit'
 import { useSubgraphHealthIndicatorManager } from 'state/user/hooks'
 import useSubgraphHealth, { SubgraphStatus } from 'hooks/useSubgraphHealth'
-import { useRouter } from 'next/router'
 
 const StyledCard = styled(Card)`
   border-radius: 8px;
@@ -79,18 +77,14 @@ export interface BlockResponse {
   }[]
 }
 
-const FixedSubgraphHealthIndicator = () => {
-  const { pathname } = useRouter()
-  const isOnNftPages = pathname.includes('nfts')
-  return isOnNftPages ? <SubgraphHealthIndicator subgraphName="pancakeswap/nft-market" /> : null
-}
-
-export const SubgraphHealthIndicator: React.FC<{
-  subgraphName: string
-  inline?: boolean
-  customDescriptions?: CustomDescriptions
-  obeyGlobalSetting?: boolean
-}> = ({ subgraphName, inline, customDescriptions, obeyGlobalSetting }) => {
+const SubgraphHealthIndicator: React.FC<
+  React.PropsWithChildren<{
+    subgraphName: string
+    inline?: boolean
+    customDescriptions?: CustomDescriptions
+    obeyGlobalSetting?: boolean
+  }>
+> = ({ subgraphName, inline, customDescriptions, obeyGlobalSetting = true }) => {
   const { t } = useTranslation()
   const { status, currentBlock, blockDifference, latestBlock } = useSubgraphHealth(subgraphName)
   const [alwaysShowIndicator] = useSubgraphHealthIndicatorManager()
@@ -133,7 +127,13 @@ export const SubgraphHealthIndicator: React.FC<{
   }
 
   return (
-    <Box position="fixed" bottom="55px" right="5%" ref={targetRef} data-test="subgraph-health-indicator">
+    <Box
+      position="fixed"
+      bottom="calc(55px + env(safe-area-inset-bottom))"
+      right="5%"
+      ref={targetRef}
+      data-test="subgraph-health-indicator"
+    >
       {tooltipVisible && tooltip}
       <StyledCard>
         <IndicatorWrapper alignItems="center" p="10px">
@@ -175,4 +175,4 @@ const TooltipContent = ({
   )
 }
 
-export default FixedSubgraphHealthIndicator
+export default SubgraphHealthIndicator

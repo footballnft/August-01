@@ -1,7 +1,7 @@
 import styled from 'styled-components'
-import { Box, Heading, Text, Button, Flex, useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { Box, Heading, Text, Button, Flex, useMatchBreakpoints } from '@pancakeswap/uikit'
 import Container from 'components/Layout/Container'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { useRouter } from 'next/router'
 
 const StyledHero = styled(Box)`
@@ -47,7 +47,7 @@ const StyledSubTitle = styled(Text)`
 const Hero = () => {
   const router = useRouter()
   const { t } = useTranslation()
-  const { isMobile } = useMatchBreakpointsContext()
+  const { isMobile } = useMatchBreakpoints()
 
   const handleClick = () => {
     const howToElem = document.getElementById('ifo-how-to')

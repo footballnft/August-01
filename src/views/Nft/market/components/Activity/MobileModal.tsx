@@ -1,25 +1,25 @@
 import { InjectedModalProps, Modal, Flex, Text, Button, BinanceIcon, Box } from '@pancakeswap/uikit'
-import { Price } from '@pancakeswap/sdk'
+import { Price, Currency } from '@pancakeswap/sdk'
 import useTheme from 'hooks/useTheme'
 import { Activity, NftToken } from 'state/nftMarket/types'
 import { LightGreyCard } from 'components/Card'
-import { useTranslation } from 'contexts/Localization'
-import truncateHash from 'utils/truncateHash'
+import { useTranslation } from '@pancakeswap/localization'
+import truncateHash from '@pancakeswap/utils/truncateHash'
 import { multiplyPriceByAmount } from 'utils/prices'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { getBscScanLink } from 'utils'
+import { getBlockExploreLink } from 'utils'
 import ActivityEventText from './ActivityEventText'
 import NFTMedia from '../NFTMedia'
 
 interface MobileModalProps extends InjectedModalProps {
   activity: Activity
   nft: NftToken
-  bnbBusdPrice: Price
+  bnbBusdPrice: Price<Currency, Currency>
   localeTimestamp: string
   isUserActivity?: boolean
 }
 
-const MobileModal: React.FC<MobileModalProps> = ({
+const MobileModal: React.FC<React.PropsWithChildren<MobileModalProps>> = ({
   nft,
   activity,
   bnbBusdPrice,
@@ -38,7 +38,7 @@ const MobileModal: React.FC<MobileModalProps> = ({
       title={t('Transaction Details')}
       maxWidth="320px"
       onDismiss={onDismiss}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
     >
       <Flex flexDirection="column">
         <Flex alignItems="center" mb="16px" justifyContent="space-between">
@@ -105,7 +105,7 @@ const MobileModal: React.FC<MobileModalProps> = ({
           </Flex>
         </LightGreyCard>
         <Flex flexDirection="column" pt="16px" alignItems="center">
-          <Button as="a" external href={getBscScanLink(activity.tx, 'transaction', chainId)}>
+          <Button as="a" external href={getBlockExploreLink(activity.tx, 'transaction', chainId)}>
             {t('View on BscScan')}
           </Button>
         </Flex>

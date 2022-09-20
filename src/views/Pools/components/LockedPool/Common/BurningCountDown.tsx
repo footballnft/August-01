@@ -1,5 +1,5 @@
 import { useState, useCallback, memo, useMemo } from 'react'
-import useInterval from 'hooks/useInterval'
+import { useInterval } from '@pancakeswap/hooks'
 
 import getTimePeriods from 'utils/getTimePeriods'
 import { UNLOCK_FREE_DURATION } from 'config/constants/pools'
@@ -11,7 +11,7 @@ interface PropsType {
   lockEndTime: string
 }
 
-const BurningCountDown: React.FC<PropsType> = ({ lockEndTime }) => {
+const BurningCountDown: React.FC<React.PropsWithChildren<PropsType>> = ({ lockEndTime }) => {
   const [remainingSeconds, setRemainingSeconds] = useState(0)
 
   // 1 week after lockEndTime

@@ -20,7 +20,7 @@ export default {
   argTypes: {},
 } as Meta;
 
-export const Default: React.FC = () => {
+export const Default: React.FC<React.PropsWithChildren> = () => {
   return (
     <div style={{ padding: "32px", width: "500px" }}>
       <Row>
@@ -57,7 +57,7 @@ export const Default: React.FC = () => {
   );
 };
 
-export const CardHeader: React.FC = () => {
+export const CardHeader: React.FC<React.PropsWithChildren> = () => {
   const theme = useTheme();
   // This is example how to make card header "overlap" the border.
   // Seems to be easiest solution that works on all screens and does not rely on absolute positioning trickery
@@ -67,7 +67,7 @@ export const CardHeader: React.FC = () => {
   const borderBackground = `linear-gradient(${customHeadingColor} ${gradientStopPoint}, ${theme.colors.cardBorder} ${gradientStopPoint})`;
 
   // Gradient overlap is also possible, just put the "dividing" gradient first and after that the header gradient
-  const gradientBorderColor = `linear-gradient(transparent ${gradientStopPoint}, ${theme.colors.cardBorder} ${gradientStopPoint}), ${theme.colors.gradients.cardHeader}`;
+  const gradientBorderColor = `linear-gradient(transparent ${gradientStopPoint}, ${theme.colors.cardBorder} ${gradientStopPoint}), ${theme.colors.gradientCardHeader}`;
   return (
     <div style={{ padding: "32px", width: "500px" }}>
       <Row>
@@ -83,7 +83,7 @@ export const CardHeader: React.FC = () => {
       </Row>
       <Row>
         <Card borderBackground={gradientBorderColor}>
-          <Box background={theme.colors.gradients.cardHeader} p="16px" height={headerHeight}>
+          <Box background={theme.colors.gradientCardHeader} p="16px" height={headerHeight}>
             <Heading size="xl">Gradient overlapping Header</Heading>
           </Box>
           <CardBody>The border on sides of header is covered</CardBody>
@@ -130,7 +130,7 @@ export const CardHeader: React.FC = () => {
   );
 };
 
-export const CustomBackground: React.FC = () => {
+export const CustomBackground: React.FC<React.PropsWithChildren> = () => {
   return (
     <div style={{ padding: "32px", width: "500px" }}>
       <Card background="#f0c243" borderBackground="#b88700">
@@ -140,7 +140,7 @@ export const CustomBackground: React.FC = () => {
   );
 };
 
-export const Ribbon: React.FC = () => {
+export const Ribbon: React.FC<React.PropsWithChildren> = () => {
   return (
     <div style={{ padding: "32px", width: "500px" }}>
       <Row>

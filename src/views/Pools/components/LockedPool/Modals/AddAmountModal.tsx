@@ -3,7 +3,7 @@ import { differenceInSeconds } from 'date-fns'
 import { convertTimeToSeconds } from 'utils/timeHelper'
 import { Modal, Box, MessageText, Message, Checkbox, Flex, Text } from '@pancakeswap/uikit'
 import _noop from 'lodash/noop'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import BigNumber from 'bignumber.js'
 import { useIfoCeiling } from 'state/pools/hooks'
 import useTheme from 'hooks/useTheme'
@@ -42,10 +42,10 @@ const RenewDuration = ({ setCheckedState, checkedState }) => {
     </>
   )
 }
-// add 60s buffer in order to make sure minium duration by pass on renew extension
+// add 60s buffer in order to make sure minimum duration by pass on renew extension
 const MIN_DURATION_BUFFER = 60
 
-const AddAmountModal: React.FC<AddAmountModalProps> = ({
+const AddAmountModal: React.FC<React.PropsWithChildren<AddAmountModalProps>> = ({
   onDismiss,
   currentBalance,
   currentLockedAmount,
@@ -119,7 +119,7 @@ const AddAmountModal: React.FC<AddAmountModalProps> = ({
         style={{ maxWidth: '420px' }}
         title={t('Add CAKE')}
         onDismiss={onDismiss}
-        headerBackground={theme.colors.gradients.cardHeader}
+        headerBackground={theme.colors.gradientCardHeader}
       >
         <Box mb="16px">
           <BalanceField

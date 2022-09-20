@@ -2,23 +2,22 @@ import { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
 import { MaxUint256 } from '@ethersproject/constants'
-import { Modal, Text, Flex, BalanceInput, Box, Button, LogoRoundIcon } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
-import { useWeb3React } from '@web3-react/core'
+import { Modal, Text, Flex, BalanceInput, Box, Button, LogoRoundIcon, useToast } from '@pancakeswap/uikit'
+import { useWeb3React } from '@pancakeswap/wagmi'
+import { useTranslation } from '@pancakeswap/localization'
 import { formatNumber, getBalanceAmount, getBalanceNumber } from 'utils/formatBalance'
 import useTheme from 'hooks/useTheme'
 import useTokenBalance from 'hooks/useTokenBalance'
 import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
 import { useCake, useFarmAuctionContract } from 'hooks/useContract'
 import { DEFAULT_TOKEN_DECIMAL } from 'config'
-import useToast from 'hooks/useToast'
 import ConnectWalletButton from 'components/ConnectWalletButton'
 import ApproveConfirmButtons, { ButtonArrangement } from 'components/ApproveConfirmButtons'
 import { ConnectedBidder, FetchStatus } from 'config/constants/types'
 import { usePriceCakeBusd } from 'state/farms/hooks'
 import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
 import { ToastDescriptionWithTx } from 'components/Toast'
-import { bscTokens } from 'config/constants/tokens'
+import { bscTokens } from '@pancakeswap/tokens'
 import { requiresApproval } from 'utils/requiresApproval'
 
 const StyledModal = styled(Modal)`
@@ -49,7 +48,7 @@ interface PlaceBidModalProps {
   refreshBidders: () => void
 }
 
-const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
+const PlaceBidModal: React.FC<React.PropsWithChildren<PlaceBidModalProps>> = ({
   onDismiss,
   initialBidAmount,
   connectedBidder,
@@ -137,7 +136,7 @@ const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
     setBid(valueToSet.toString())
   }
   return (
-    <StyledModal title={t('Place a Bid')} onDismiss={onDismiss} headerBackground={theme.colors.gradients.cardHeader}>
+    <StyledModal title={t('Place a Bid')} onDismiss={onDismiss} headerBackground={theme.colors.gradientCardHeader}>
       <ExistingInfo>
         <Flex justifyContent="space-between">
           <Text>{t('Your existing bid')}</Text>

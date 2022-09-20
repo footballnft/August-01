@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { ArrowForwardIcon, Button, Flex, Heading, Skeleton, Text } from '@pancakeswap/uikit'
 import { NextLinkFromReactRouter } from 'components/NextLink'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { formatLocalisedCompactNumber } from 'utils/formatBalance'
 import useIntersectionObserver from 'hooks/useIntersectionObserver'
 import { getTotalWon } from 'state/predictions/helpers'
@@ -15,16 +15,14 @@ const StyledLink = styled(NextLinkFromReactRouter)`
   width: 100%;
 `
 
-const PredictionCardHeader: React.FC<{ preText: string; bnbWon: number }> = ({ preText, bnbWon }) => {
-  const bnbBusdPrice = useBNBBusdPrice()
-  const bnbWonInUsd = multiplyPriceByAmount(bnbBusdPrice, bnbWon)
-
-  const localisedBnbUsdString = formatLocalisedCompactNumber(bnbWonInUsd)
-
+const PredictionCardHeader: React.FC<React.PropsWithChildren<{ preText: string; won: string }>> = ({
+  preText,
+  won,
+}) => {
   return (
     <Heading color="#280D5F" my="8px" scale="xl" bold>
       {preText}
-      {localisedBnbUsdString}
+      {won}
     </Heading>
   )
 }
@@ -33,8 +31,8 @@ const PredictionCardContent = () => {
   const { t } = useTranslation()
   const { observerRef, isIntersecting } = useIntersectionObserver()
   const [loadData, setLoadData] = useState(false)
-  const bnbBusdPrice = useBNBBusdPrice()
-  const cakePriceBusd = useCakeBusdPrice()
+  const bnbBusdPrice = useBNBBusdPrice({ forceMainnet: true })
+  const cakePriceBusd = useCakeBusdPrice({ forceMainnet: true })
 
   const { data } = useSWR(loadData ? ['prediction', 'tokenWon'] : null, getTotalWon, {
     refreshInterval: SLOW_INTERVAL,
@@ -60,7 +58,7 @@ const PredictionCardContent = () => {
           {t('Prediction')}
         </Text>
         {bnbWonInUsd ? (
-          <PredictionCardHeader preText={pretext} bnbWon={bnbWonInUsd} />
+          <PredictionCardHeader preText={pretext} won={localisedBnbUsdString} />
         ) : (
           <>
             <Skeleton width={230} height={40} my="8px" />

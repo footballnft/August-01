@@ -1,35 +1,35 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useWeb3React } from '@web3-react/core'
-import styled from 'styled-components'
+import { useTranslation } from '@pancakeswap/localization'
 import {
-  Modal,
-  Text,
-  Flex,
-  Image,
-  Button,
-  Slider,
-  BalanceInput,
   AutoRenewIcon,
-  Link,
+  BalanceInput,
+  Button,
   CalculateIcon,
+  Flex,
   IconButton,
+  Image,
+  Link,
+  Modal,
   Skeleton,
+  Slider,
+  Text,
+  useToast,
 } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
-import useTheme from 'hooks/useTheme'
-import useToast from 'hooks/useToast'
-import useCatchTxError from 'hooks/useCatchTxError'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import BigNumber from 'bignumber.js'
 import RoiCalculatorModal from 'components/RoiCalculatorModal'
 import { ToastDescriptionWithTx } from 'components/Toast'
-import { getFullDisplayBalance, formatNumber, getDecimalAmount } from 'utils/formatBalance'
-import { DeserializedPool } from 'state/types'
-import { updateUserBalance, updateUserPendingReward, updateUserStakedBalance } from 'state/pools'
+import useCatchTxError from 'hooks/useCatchTxError'
+import useTheme from 'hooks/useTheme'
+import { useCallback, useEffect, useState } from 'react'
 import { useAppDispatch } from 'state'
+import { updateUserBalance, updateUserPendingReward, updateUserStakedBalance } from 'state/pools'
+import { DeserializedPool } from 'state/types'
+import styled from 'styled-components'
 import { getInterestBreakdown } from 'utils/compoundApyHelpers'
-import PercentageButton from './PercentageButton'
+import { formatNumber, getDecimalAmount, getFullDisplayBalance } from 'utils/formatBalance'
 import useStakePool from '../../../hooks/useStakePool'
 import useUnstakePool from '../../../hooks/useUnstakePool'
+import PercentageButton from './PercentageButton'
 
 interface StakeModalProps {
   isBnbPool: boolean
@@ -56,7 +56,7 @@ const AnnualRoiDisplay = styled(Text)`
   text-overflow: ellipsis;
 `
 
-const StakeModal: React.FC<StakeModalProps> = ({
+const StakeModal: React.FC<React.PropsWithChildren<StakeModalProps>> = ({
   isBnbPool,
   pool,
   stakingTokenBalance,
@@ -81,7 +81,13 @@ const StakeModal: React.FC<StakeModalProps> = ({
     if (isRemovingStake) {
       return userData.stakedBalance
     }
-    return stakingLimit.gt(0) && stakingTokenBalance.gt(stakingLimit) ? stakingLimit : stakingTokenBalance
+    if (stakingLimit.gt(0)) {
+      const stakingLimitLeft = stakingLimit.minus(userData.stakedBalance)
+      if (stakingTokenBalance.gt(stakingLimitLeft)) {
+        return stakingLimitLeft
+      }
+    }
+    return stakingTokenBalance
   }, [userData.stakedBalance, stakingTokenBalance, stakingLimit, isRemovingStake])
   const fullDecimalStakeAmount = getDecimalAmount(new BigNumber(stakeAmount), stakingToken.decimals)
   const userNotEnoughToken = isRemovingStake
@@ -200,7 +206,7 @@ const StakeModal: React.FC<StakeModalProps> = ({
       minWidth="346px"
       title={isRemovingStake ? t('Unstake') : t('Stake in Pool')}
       onDismiss={onDismiss}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
     >
       {stakingLimit.gt(0) && !isRemovingStake && (
         <Text color="secondary" bold mb="24px" style={{ textAlign: 'center' }} fontSize="16px">
@@ -243,7 +249,10 @@ const StakeModal: React.FC<StakeModalProps> = ({
       )}
       <Text ml="auto" color="textSubtle" fontSize="12px" mb="8px">
         {t('Balance: %balance%', {
-          balance: getFullDisplayBalance(getCalculatedStakingLimit(), stakingToken.decimals),
+          balance: getFullDisplayBalance(
+            isRemovingStake ? userData.stakedBalance : stakingTokenBalance,
+            stakingToken.decimals,
+          ),
         })}
       </Text>
       <Slider

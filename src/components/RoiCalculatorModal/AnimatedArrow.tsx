@@ -21,7 +21,7 @@ const rotate = keyframes`
 const ArrowContainer = styled(Flex)`
   & > svg {
     animation: 0.2s ${rotate} linear;
-    stroke: ${({ theme }) => `${theme.colors.primary}3D`};
+    stroke: ${({ theme }) => `${theme.colors.primary3D}`};
     stroke-width: 0;
   }
 `
@@ -30,7 +30,7 @@ interface AnimatedArrowProps {
   calculatorState: RoiCalculatorReducerState
 }
 
-const AnimatedArrow: React.FC<AnimatedArrowProps> = ({ calculatorState }) => {
+const AnimatedArrow: React.FC<React.PropsWithChildren<AnimatedArrowProps>> = ({ calculatorState }) => {
   const [key, setKey] = useState('roiArrow-0')
   const { mode } = calculatorState.controls
 

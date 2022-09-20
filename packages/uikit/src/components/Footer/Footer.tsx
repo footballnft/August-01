@@ -1,23 +1,22 @@
+import { vars } from "@pancakeswap/ui/css/vars.css";
 import React from "react";
-import { baseColors, darkColors } from "../../theme/colors";
-import { Flex, Box } from "../Box";
+import { Box, Flex } from "../Box";
 import { Link } from "../Link";
 import {
   StyledFooter,
   StyledIconMobileContainer,
   StyledList,
   StyledListItem,
-  StyledText,
   StyledSocialLinks,
+  StyledText,
   StyledToolsContainer,
 } from "./styles";
-import { FooterProps } from "./types";
-import { ThemeSwitcher } from "../ThemeSwitcher";
 import LangSelector from "../LangSelector/LangSelector";
 import { LogoWithTextIcon } from "../Svg";
-import { Colors } from "../..";
+import { ThemeSwitcher } from "../ThemeSwitcher";
+import { FooterProps } from "./types";
 
-const MenuItem: React.FC<FooterProps> = ({
+const MenuItem: React.FC<React.PropsWithChildren<FooterProps>> = ({
   items,
   isDark,
   toggleTheme,
@@ -29,7 +28,7 @@ const MenuItem: React.FC<FooterProps> = ({
   ...props
 }) => {
   return (
-    <StyledFooter p={["40px 16px", null, "56px 40px 32px 40px"]} {...props} justifyContent="center">
+    <StyledFooter data-theme="dark" p={["40px 16px", null, "56px 40px 32px 40px"]} {...props} justifyContent="center">
       <Flex flexDirection="column" width={["100%", null, "1200px;"]}>
         <StyledIconMobileContainer display={["block", null, "none"]}>
           <LogoWithTextIcon isDark width="130px" />
@@ -48,10 +47,11 @@ const MenuItem: React.FC<FooterProps> = ({
                 <StyledListItem key={label}>
                   {href ? (
                     <Link
+                      data-theme="dark"
                       href={href}
                       target="_blank"
                       rel="noreferrer noopener"
-                      color={isHighlighted ? baseColors.warning : darkColors.text}
+                      color={isHighlighted ? vars.colors.warning : "text"}
                       bold={false}
                     >
                       {label}
@@ -69,6 +69,7 @@ const MenuItem: React.FC<FooterProps> = ({
         </Flex>
         <StyledSocialLinks order={[2]} pb={["42px", null, "32px"]} mb={["0", null, "32px"]} />
         <StyledToolsContainer
+          data-theme="dark"
           order={[1, null, 3]}
           flexDirection={["column", null, "row"]}
           justifyContent="space-between"
@@ -79,12 +80,11 @@ const MenuItem: React.FC<FooterProps> = ({
               currentLang={currentLang}
               langs={langs}
               setLang={setLang}
-              color={darkColors.textSubtle as keyof Colors}
+              color="textSubtle"
               dropdownPosition="top-right"
             />
           </Flex>
           <Flex order={[1, null, 2]} mb={["24px", null, "0"]} justifyContent="space-between" alignItems="center">
-            
           </Flex>
         </StyledToolsContainer>
       </Flex>

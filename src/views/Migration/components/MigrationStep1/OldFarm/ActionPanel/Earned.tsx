@@ -1,21 +1,21 @@
 import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
-import { useTranslation } from 'contexts/Localization'
-import { Flex, Heading, Text, useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { useTranslation } from '@pancakeswap/localization'
+import { Flex, Heading, Text, useMatchBreakpoints } from '@pancakeswap/uikit'
 import Balance from 'components/Balance'
 import { ActionContainer, ActionContent, ActionTitles } from 'views/Pools/components/PoolsTable/ActionPanel/styles'
 import { usePriceCakeBusd } from 'state/farmsV1/hooks'
-import { EarnedProps } from '../Cells/Earned'
+import { EarnedProps } from '../../../Farm/Cells/Earned'
 
 const Container = styled(ActionContainer)`
   flex: 2;
   height: 100%;
 `
 
-const Earned: React.FC<EarnedProps> = ({ earnings }) => {
+const Earned: React.FC<React.PropsWithChildren<EarnedProps>> = ({ earnings }) => {
   const { t } = useTranslation()
-  const { isMobile } = useMatchBreakpointsContext()
+  const { isMobile } = useMatchBreakpoints()
 
   const earningsBigNumber = new BigNumber(earnings)
   const cakePrice = usePriceCakeBusd()

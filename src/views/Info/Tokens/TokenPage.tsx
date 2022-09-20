@@ -15,11 +15,11 @@ import {
   LinkExternal,
   Spinner,
   Image,
-  useMatchBreakpointsContext,
+  useMatchBreakpoints,
 } from '@pancakeswap/uikit'
 import Page from 'components/Layout/Page'
-import { getBscScanLink } from 'utils'
-import truncateHash from 'utils/truncateHash'
+import { getBlockExploreLink } from 'utils'
+import truncateHash from '@pancakeswap/utils/truncateHash'
 import useCMCLink from 'views/Info/hooks/useCMCLink'
 import { CurrencyLogo } from 'views/Info/components/CurrencyLogo'
 import { formatAmount } from 'utils/formatInfoNumbers'
@@ -37,7 +37,7 @@ import PoolTable from 'views/Info/components/InfoTables/PoolsTable'
 import TransactionTable from 'views/Info/components/InfoTables/TransactionsTable'
 import { useWatchlistTokens } from 'state/user/hooks'
 import { ONE_HOUR_SECONDS } from 'config/constants/info'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import ChartCard from 'views/Info/components/InfoCharts/ChartCard'
 
 const ContentLayout = styled.div`
@@ -62,8 +62,8 @@ const StyledCMCLink = styled(UIKitLink)`
 `
 const DEFAULT_TIME_WINDOW: Duration = { weeks: 1 }
 
-const TokenPage: React.FC<{ routeAddress: string }> = ({ routeAddress }) => {
-  const { isXs, isSm } = useMatchBreakpointsContext()
+const TokenPage: React.FC<React.PropsWithChildren<{ routeAddress: string }>> = ({ routeAddress }) => {
+  const { isXs, isSm } = useMatchBreakpoints()
   const { t } = useTranslation()
 
   // In case somebody pastes checksummed address into url (since GraphQL expects lowercase address)
@@ -129,7 +129,7 @@ const TokenPage: React.FC<{ routeAddress: string }> = ({ routeAddress }) => {
                 </Flex>
               </Breadcrumbs>
               <Flex justifyContent={[null, null, 'flex-end']} mt={['8px', '8px', 0]}>
-                <LinkExternal mr="8px" color="primary" href={getBscScanLink(address, 'address')}>
+                <LinkExternal mr="8px" color="primary" href={getBlockExploreLink(address, 'address')}>
                   {t('View on BscScan')}
                 </LinkExternal>
                 {cmcLink && (

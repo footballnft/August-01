@@ -1,12 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { BigNumber } from '@ethersproject/bignumber'
-import { useEffect, useState } from 'react'
-import { AutoRenewIcon, Button, useModal } from '@pancakeswap/uikit'
-import { ContextApi } from 'contexts/Localization/types'
+import { ContextApi } from '@pancakeswap/localization'
+import { AutoRenewIcon, Button, useModal, useToast } from '@pancakeswap/uikit'
 import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
-import { useNftSaleContract } from 'hooks/useContract'
-import useToast from 'hooks/useToast'
 import useCatchTxError from 'hooks/useCatchTxError'
+import { useNftSaleContract } from 'hooks/useContract'
+import { useEffect, useState } from 'react'
 import { DefaultTheme } from 'styled-components'
 import { SaleStatusEnum } from '../../types'
 import ConfirmModal from '../Modals/Confirm'
@@ -20,7 +19,13 @@ type PreEventProps = {
   ticketsOfUser: BigNumber[]
 }
 
-const MintButton: React.FC<PreEventProps> = ({ t, theme, saleStatus, numberTicketsOfUser, ticketsOfUser }) => {
+const MintButton: React.FC<React.PropsWithChildren<PreEventProps>> = ({
+  t,
+  theme,
+  saleStatus,
+  numberTicketsOfUser,
+  ticketsOfUser,
+}) => {
   const { callWithGasPrice } = useCallWithGasPrice()
   const nftSaleContract = useNftSaleContract()
   const [txHashMintingResult, setTxHashMintingResult] = useState(null)
@@ -36,7 +41,7 @@ const MintButton: React.FC<PreEventProps> = ({ t, theme, saleStatus, numberTicke
     <ConfirmModal
       title={t('Mint')}
       isLoading={isLoading}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
       txHash={txHashMintingResult}
       loadingText={t('Please confirm your transaction in wallet.')}
       loadingButtonLabel={t('Minting...')}

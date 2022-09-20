@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
-import { useTranslation } from 'contexts/Localization'
-import { useWeb3React } from '@web3-react/core'
+import { useTranslation } from '@pancakeswap/localization'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import { useProfile } from 'state/profile/hooks'
-import { Flex, Box, useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { Flex, Box, useMatchBreakpoints } from '@pancakeswap/uikit'
 import Image from 'next/image'
 import { useTradingCompetitionContractMoD } from 'hooks/useContract'
 import useTheme from 'hooks/useTheme'
 import { PageMeta } from 'components/Layout/Page'
-import { TC_MOD_SUBGRAPH } from 'config/constants/endpoints'
+import { TC_MOD_SUBGRAPH, API_PROFILE } from 'config/constants/endpoints'
 import { multicallv2 } from 'utils/multicall'
 import tradingCompetitionMoDAbi from 'config/abi/tradingCompetitionMoD.json'
 import {
@@ -31,7 +31,7 @@ import RibbonWithImage from './components/RibbonWithImage'
 import HowToJoin from './components/HowToJoin'
 import BattleCta from './components/BattleCta'
 import Rules from './components/Rules'
-import { UserTradingInformation } from './types'
+import { UserTradingInformation, initialUserTradingInformation, initialUserLeaderboardInformation } from './types'
 import { CompetitionPage, BannerFlex, BottomBunnyWrapper } from './styles'
 import RanksIcon from './svgs/RanksIcon'
 import ModBattleBanner, { CoinDecoration } from './mod/components/BattleBanner/ModBattleBanner'
@@ -44,33 +44,17 @@ import MoDCakerBunny from './pngs/MoD-caker.png'
 import PrizesInfoSection from './components/PrizesInfoSection'
 
 const MoDCompetition = () => {
-  const profileApiUrl = process.env.NEXT_PUBLIC_API_PROFILE
   const { account } = useWeb3React()
   const { t } = useTranslation()
-  const { profile, isLoading } = useProfile()
-  const { isMobile } = useMatchBreakpointsContext()
+  const { profile, isLoading: isProfileLoading } = useProfile()
+  const { isMobile } = useMatchBreakpoints()
   const { isDark, theme } = useTheme()
   const tradingCompetitionContract = useTradingCompetitionContractMoD(false)
   const [currentPhase, setCurrentPhase] = useState(CompetitionPhases.CLAIM)
   const { registrationSuccessful, claimSuccessful, onRegisterSuccess, onClaimSuccess } = useRegistrationClaimStatus()
-  const [userTradingInformation, setUserTradingInformation] = useState<UserTradingInformation>({
-    hasRegistered: false,
-    isUserActive: false,
-    hasUserClaimed: false,
-    userRewardGroup: '0',
-    userCakeRewards: '0',
-    userDarRewards: '0',
-    userPointReward: '0',
-    canClaimNFT: false,
-  })
-  const [userLeaderboardInformation, setUserLeaderboardInformation] = useState({
-    global: 0,
-    team: 0,
-    volume: 0,
-    next_rank: 0,
-    darVolumeRank: '???',
-    darVolume: '???',
-  })
+  const [userTradingInformation, setUserTradingInformation] =
+    useState<UserTradingInformation>(initialUserTradingInformation)
+  const [userLeaderboardInformation, setUserLeaderboardInformation] = useState(initialUserLeaderboardInformation)
 
   const {
     globalLeaderboardInformation,
@@ -102,9 +86,9 @@ const MoDCompetition = () => {
 
     const fetchUserContract = async () => {
       try {
-        const [user, [userClaimed]] = await multicallv2(
-          tradingCompetitionMoDAbi,
-          [
+        const [user, [userClaimed]] = await multicallv2({
+          abi: tradingCompetitionMoDAbi,
+          calls: [
             {
               address: tradingCompetitionContract.address,
               name: 'claimInformation',
@@ -116,9 +100,11 @@ const MoDCompetition = () => {
               params: [account],
             },
           ],
-          { requireSuccess: false },
-        )
+          options: { requireSuccess: false },
+        })
         const userObject: UserTradingInformation = {
+          isLoading: false,
+          account,
           hasRegistered: user[0],
           isUserActive: user[1],
           hasUserClaimed: userClaimed,
@@ -131,6 +117,7 @@ const MoDCompetition = () => {
         setUserTradingInformation(userObject)
       } catch (error) {
         console.error(error)
+        setUserTradingInformation({ ...initialUserTradingInformation, account, isLoading: false })
       }
     }
 
@@ -138,34 +125,31 @@ const MoDCompetition = () => {
     if (account) {
       fetchUserContract()
     } else {
-      setUserTradingInformation({
-        hasRegistered: false,
-        isUserActive: false,
-        hasUserClaimed: false,
-        userRewardGroup: '0',
-        userCakeRewards: '0',
-        userDarRewards: '0',
-        userPointReward: '0',
-        canClaimNFT: false,
-      })
+      setUserTradingInformation({ ...initialUserTradingInformation, isLoading: false })
     }
   }, [account, registrationSuccessful, claimSuccessful, tradingCompetitionContract])
 
   useEffect(() => {
     const fetchUserTradingStats = async () => {
-      const res = await fetch(`${profileApiUrl}/api/users/${account}`)
+      const res = await fetch(`${API_PROFILE}/api/users/${account}`)
       const data = await res.json()
       setUserLeaderboardInformation(data.leaderboard_dar)
     }
     // If user has not registered, user trading information will not be displayed and should not be fetched
-    if (account && userTradingInformation.hasRegistered) {
+    if (userTradingInformation.account && userTradingInformation.hasRegistered) {
       fetchUserTradingStats()
+    } else {
+      setUserLeaderboardInformation({ ...initialUserLeaderboardInformation })
     }
-  }, [account, userTradingInformation, profileApiUrl])
+  }, [account, userTradingInformation])
 
+  const isLoading = isProfileLoading || userTradingInformation.isLoading
   // Don't hide when loading. Hide if the account is connected && the user hasn't registered && the competition is live or finished
   const shouldHideCta =
-    !isLoading && account && !userTradingInformation.hasRegistered && (isCompetitionLive || hasCompetitionEnded)
+    !isLoading &&
+    userTradingInformation.account &&
+    !userTradingInformation.hasRegistered &&
+    (isCompetitionLive || hasCompetitionEnded)
 
   return (
     <>

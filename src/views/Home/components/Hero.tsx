@@ -1,9 +1,8 @@
 import { Button, Flex, Heading } from '@pancakeswap/uikit'
-import { useWeb3React } from '@web3-react/core'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import ConnectWalletButton from 'components/ConnectWalletButton'
 import { NextLinkFromReactRouter } from 'components/NextLink'
-import { useTranslation } from 'contexts/Localization'
-import useTheme from 'hooks/useTheme'
+import { useTranslation } from '@pancakeswap/localization'
 import styled, { keyframes } from 'styled-components'
 import CompositeImage, { CompositeImageProps } from './CompositeImage'
 import { SlideSvgDark, SlideSvgLight } from './SlideSvg'
@@ -91,12 +90,30 @@ const starsImage: CompositeImageProps = {
 const Hero = () => {
   const { t } = useTranslation()
   const { account } = useWeb3React()
-  const { theme } = useTheme()
 
   return (
     <>
+      <style jsx global>
+        {`
+          .slide-svg-dark {
+            display: none;
+          }
+          .slide-svg-light {
+            display: block;
+          }
+          [data-theme='dark'] .slide-svg-dark {
+            display: block;
+          }
+          [data-theme='dark'] .slide-svg-light {
+            display: none;
+          }
+        `}
+      </style>
       <BgWrapper>
-        <InnerWrapper>{theme.isDark ? <SlideSvgDark width="100%" /> : <SlideSvgLight width="100%" />}</InnerWrapper>
+        <InnerWrapper>
+          <SlideSvgDark className="slide-svg-dark" width="100%" />
+          <SlideSvgLight className="slide-svg-light" width="100%" />
+        </InnerWrapper>
       </BgWrapper>
       <Flex
         position="relative"

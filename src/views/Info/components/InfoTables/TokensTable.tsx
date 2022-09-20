@@ -1,20 +1,12 @@
 import { useState, useMemo, useCallback, useEffect, Fragment } from 'react'
 import styled from 'styled-components'
-import {
-  Text,
-  Flex,
-  Box,
-  Skeleton,
-  ArrowBackIcon,
-  ArrowForwardIcon,
-  useMatchBreakpointsContext,
-} from '@pancakeswap/uikit'
+import { Text, Flex, Box, Skeleton, ArrowBackIcon, ArrowForwardIcon, useMatchBreakpoints } from '@pancakeswap/uikit'
 import { TokenData } from 'state/info/types'
 import { NextLinkFromReactRouter } from 'components/NextLink'
 import { CurrencyLogo } from 'views/Info/components/CurrencyLogo'
 import { formatAmount } from 'utils/formatInfoNumbers'
 import Percent from 'views/Info/components/Percent'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import orderBy from 'lodash/orderBy'
 import { ClickableColumnHeader, TableWrapper, PageButtons, Arrow, Break } from './shared'
 
@@ -75,7 +67,7 @@ const ResponsiveLogo = styled(CurrencyLogo)`
   }
 `
 
-const TableLoader: React.FC = () => {
+const TableLoader: React.FC<React.PropsWithChildren> = () => {
   const loadingRow = (
     <ResponsiveGrid>
       <Skeleton />
@@ -95,8 +87,8 @@ const TableLoader: React.FC = () => {
   )
 }
 
-const DataRow: React.FC<{ tokenData: TokenData; index: number }> = ({ tokenData, index }) => {
-  const { isXs, isSm } = useMatchBreakpointsContext()
+const DataRow: React.FC<React.PropsWithChildren<{ tokenData: TokenData; index: number }>> = ({ tokenData, index }) => {
+  const { isXs, isSm } = useMatchBreakpoints()
   return (
     <LinkWrapper to={`/info/token/${tokenData.address}`}>
       <ResponsiveGrid>
@@ -135,10 +127,12 @@ const SORT_FIELD = {
 
 const MAX_ITEMS = 10
 
-const TokenTable: React.FC<{
-  tokenDatas: TokenData[] | undefined
-  maxItems?: number
-}> = ({ tokenDatas, maxItems = MAX_ITEMS }) => {
+const TokenTable: React.FC<
+  React.PropsWithChildren<{
+    tokenDatas: TokenData[] | undefined
+    maxItems?: number
+  }>
+> = ({ tokenDatas, maxItems = MAX_ITEMS }) => {
   const [sortField, setSortField] = useState(SORT_FIELD.volumeUSD)
   const [sortDirection, setSortDirection] = useState<boolean>(true)
 

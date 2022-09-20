@@ -19,14 +19,13 @@ import {
   Link,
 } from '@pancakeswap/uikit'
 import { NextLinkFromReactRouter as RouterLink } from 'components/NextLink'
-import { useWeb3React } from '@web3-react/core'
+import { useWeb3React } from '@pancakeswap/wagmi'
 
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import useTokenBalance from 'hooks/useTokenBalance'
 import Container from 'components/Layout/Container'
 import { useProfile } from 'state/profile/hooks'
 import Balance from 'components/Balance'
-import { nftsBaseUrl } from 'views/Nft/market/constants'
 import ConnectWalletButton from 'components/ConnectWalletButton'
 import { FlexGap } from 'components/Layout/Flex'
 import { getBalanceNumber } from 'utils/formatBalance'
@@ -163,7 +162,12 @@ const Step2 = ({ hasProfile, isLive, isCommitted }: { hasProfile: boolean; isLiv
   )
 }
 
-const IfoSteps: React.FC<TypeProps> = ({ isCommitted, hasClaimed, isLive, ifoCurrencyAddress }) => {
+const IfoSteps: React.FC<React.PropsWithChildren<TypeProps>> = ({
+  isCommitted,
+  hasClaimed,
+  isLive,
+  ifoCurrencyAddress,
+}) => {
   const { hasActiveProfile } = useProfile()
   const { account } = useWeb3React()
   const { t } = useTranslation()
@@ -198,7 +202,7 @@ const IfoSteps: React.FC<TypeProps> = ({ isCommitted, hasClaimed, isLive, ifoCur
       }
 
       return (
-        <Button as={RouterLink} to={`${nftsBaseUrl}/profile/${account.toLowerCase()}`}>
+        <Button as={RouterLink} to={`/profile/${account.toLowerCase()}`}>
           {t('Activate your Profile')}
         </Button>
       )

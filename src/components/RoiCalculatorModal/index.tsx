@@ -1,22 +1,23 @@
-import { useRef, useEffect, useMemo } from 'react'
-import styled from 'styled-components'
+import { useTranslation } from '@pancakeswap/localization'
 import {
+  BalanceInput,
+  Button,
+  ButtonMenu,
+  ButtonMenuItem,
+  Checkbox,
+  Flex,
+  HelpIcon,
   Modal,
   Text,
-  Button,
-  Flex,
-  ButtonMenu,
-  Checkbox,
-  BalanceInput,
-  HelpIcon,
-  ButtonMenuItem,
   useTooltip,
 } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
-import { useTranslation } from 'contexts/Localization'
+import { useEffect, useMemo, useRef } from 'react'
+import styled from 'styled-components'
 import { getBalanceNumber } from 'utils/formatBalance'
 
-import { useWeb3React } from '@web3-react/core'
+import { useWeb3React } from '@pancakeswap/wagmi'
+import AnimatedArrow from './AnimatedArrow'
 import RoiCalculatorFooter from './RoiCalculatorFooter'
 import RoiCard from './RoiCard'
 import useRoiCalculatorReducer, {
@@ -24,9 +25,9 @@ import useRoiCalculatorReducer, {
   DefaultCompoundStrategy,
   EditingCurrency,
 } from './useRoiCalculatorReducer'
-import AnimatedArrow from './AnimatedArrow'
 
 export interface RoiCalculatorModalProps {
+  pid?: number
   onDismiss?: () => void
   onBack?: () => void
   earningTokenPrice: number
@@ -47,6 +48,7 @@ export interface RoiCalculatorModalProps {
   initialValue?: string
   strategy?: any
   header?: React.ReactNode
+  bCakeCalculatorSlot?: (stakingTokenBalance: string) => React.ReactNode
 }
 
 const StyledModal = styled(Modal)`
@@ -78,7 +80,7 @@ const FullWidthButtonMenu = styled(ButtonMenu)<{ disabled?: boolean }>`
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 `
 
-const RoiCalculatorModal: React.FC<RoiCalculatorModalProps> = ({
+const RoiCalculatorModal: React.FC<React.PropsWithChildren<RoiCalculatorModalProps>> = ({
   onDismiss,
   onBack,
   earningTokenPrice,
@@ -100,6 +102,7 @@ const RoiCalculatorModal: React.FC<RoiCalculatorModalProps> = ({
   strategy,
   header,
   children,
+  bCakeCalculatorSlot,
 }) => {
   const { t } = useTranslation()
   const { account } = useWeb3React()
@@ -148,7 +151,6 @@ const RoiCalculatorModal: React.FC<RoiCalculatorModalProps> = ({
   const onBalanceFocus = () => {
     setCalculatorMode(CalculatorMode.ROI_BASED_ON_PRINCIPAL)
   }
-
   const editingUnit = editingCurrency === EditingCurrency.TOKEN ? stakingTokenSymbol : 'USD'
   const editingValue = editingCurrency === EditingCurrency.TOKEN ? principalAsToken : principalAsUSD
   const conversionUnit = editingCurrency === EditingCurrency.TOKEN ? 'USD' : stakingTokenSymbol
@@ -162,7 +164,7 @@ const RoiCalculatorModal: React.FC<RoiCalculatorModalProps> = ({
       title={t('ROI Calculator')}
       onDismiss={onBack || onDismiss}
       onBack={onBack ?? null}
-      headerBackground="gradients.cardHeader"
+      headerBackground="gradientCardHeader"
     >
       <ScrollableContainer>
         {strategy ? (
@@ -225,11 +227,12 @@ const RoiCalculatorModal: React.FC<RoiCalculatorModalProps> = ({
               p="4px 16px"
               width="128px"
               variant="tertiary"
+              style={{ textTransform: 'uppercase' }}
               onClick={() =>
                 setPrincipalFromUSDValue(getBalanceNumber(stakingTokenBalance.times(stakingTokenPrice)).toString())
               }
             >
-              {t('My Balance').toLocaleUpperCase()}
+              {t('My Balance')}
             </Button>
             <span ref={targetRef}>
               <HelpIcon width="16px" height="16px" color="textSubtle" />
@@ -250,6 +253,7 @@ const RoiCalculatorModal: React.FC<RoiCalculatorModalProps> = ({
               </FullWidthButtonMenu>
             </>
           )}
+          {bCakeCalculatorSlot && bCakeCalculatorSlot(principalAsToken)}
           {autoCompoundFrequency === 0 && (
             <>
               <Text mt="24px" color="secondary" bold fontSize="12px" textTransform="uppercase">

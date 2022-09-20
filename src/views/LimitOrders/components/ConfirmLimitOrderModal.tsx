@@ -9,10 +9,11 @@ import {
   Modal,
   Spinner,
   Text,
+  useMatchBreakpoints,
 } from '@pancakeswap/uikit'
 import { CurrencyLogo } from 'components/Logo'
 import { TransactionErrorContent, TransactionSubmittedContent } from 'components/TransactionConfirmationModal'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useTheme from 'hooks/useTheme'
 import { memo } from 'react'
@@ -50,7 +51,7 @@ interface ConfirmLimitOrderModalProps extends InjectedModalProps {
   swapErrorMessage: string
 }
 
-export const ConfirmLimitOrderModal: React.FC<ConfirmLimitOrderModalProps> = ({
+export const ConfirmLimitOrderModal: React.FC<React.PropsWithChildren<ConfirmLimitOrderModalProps>> = ({
   onDismiss,
   currencies,
   formattedAmounts,
@@ -69,6 +70,7 @@ export const ConfirmLimitOrderModal: React.FC<ConfirmLimitOrderModalProps> = ({
   const { t } = useTranslation()
   const { theme } = useTheme()
   const wrappedOutput = wrappedCurrency(currencies.output, chainId)
+  const { isMobile } = useMatchBreakpoints()
 
   const handleDismiss = () => {
     if (customOnDismiss) {
@@ -79,9 +81,9 @@ export const ConfirmLimitOrderModal: React.FC<ConfirmLimitOrderModalProps> = ({
   return (
     <Modal
       title={t('Confirm Limit Order')}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
       onDismiss={handleDismiss}
-      style={{ width: '436px' }}
+      style={{ width: isMobile ? '100%' : '436px' }}
     >
       {attemptingTxn ? (
         <LoadingContent />
@@ -133,7 +135,7 @@ interface OrderContentProps {
   percentageRateDifference: string
 }
 
-const OrderContent: React.FC<OrderContentProps> = ({
+const OrderContent: React.FC<React.PropsWithChildren<OrderContentProps>> = ({
   currencies,
   formattedAmounts,
   currentMarketRate,
@@ -202,7 +204,7 @@ interface LimitTradeInfoCardProps {
   limitPriceExchangeRateTextReversed: string
 }
 
-const LimitTradeInfoCard: React.FC<LimitTradeInfoCardProps> = memo(
+const LimitTradeInfoCard: React.FC<React.PropsWithChildren<LimitTradeInfoCardProps>> = memo(
   ({
     currentPriceExchangeRateText,
     currentPriceExchangeRateTextReversed,
@@ -243,7 +245,7 @@ const LimitTradeInfoCard: React.FC<LimitTradeInfoCardProps> = memo(
   },
 )
 
-const LoadingContent: React.FC = memo(() => {
+const LoadingContent: React.FC<React.PropsWithChildren> = memo(() => {
   const { t } = useTranslation()
   return (
     <Flex>

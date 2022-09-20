@@ -1,15 +1,14 @@
-import { useCurrentBlock } from 'state/block/hooks'
+import { useTranslation } from '@pancakeswap/localization'
+import { Button, useModal, useToast } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
-import { Button, useModal } from '@pancakeswap/uikit'
-import { getBalanceNumber } from 'utils/formatBalance'
-import { Ifo, PoolIds } from 'config/constants/types'
-import { WalletIfoData, PublicIfoData } from 'views/Ifos/types'
-import { useTranslation } from 'contexts/Localization'
-import useTokenBalance from 'hooks/useTokenBalance'
-import useToast from 'hooks/useToast'
 import { ToastDescriptionWithTx } from 'components/Toast'
-import GetTokenModal from './GetTokenModal'
+import { Ifo, PoolIds } from 'config/constants/types'
+import useTokenBalance from 'hooks/useTokenBalance'
+import { useCurrentBlock } from 'state/block/hooks'
+import { getBalanceNumber } from 'utils/formatBalance'
+import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
 import ContributeModal from './ContributeModal'
+import GetTokenModal from './GetTokenModal'
 
 interface Props {
   poolId: PoolIds
@@ -17,7 +16,7 @@ interface Props {
   publicIfoData: PublicIfoData
   walletIfoData: WalletIfoData
 }
-const ContributeButton: React.FC<Props> = ({ poolId, ifo, publicIfoData, walletIfoData }) => {
+const ContributeButton: React.FC<React.PropsWithChildren<Props>> = ({ poolId, ifo, publicIfoData, walletIfoData }) => {
   const publicPoolCharacteristics = publicIfoData[poolId]
   const userPoolCharacteristics = walletIfoData[poolId]
   const { isPendingTx, amountTokenCommittedInLP } = userPoolCharacteristics

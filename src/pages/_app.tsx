@@ -1,26 +1,26 @@
-import { ResetCSS } from '@pancakeswap/uikit'
-import Script from 'next/script'
-import dynamic from 'next/dynamic'
+import { ResetCSS, ToastListener } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
 import GlobalCheckClaimStatus from 'components/GlobalCheckClaimStatus'
-import FixedSubgraphHealthIndicator from 'components/SubgraphHealthIndicator'
-import { ToastListener } from 'contexts/ToastsContext'
+import { NetworkModal } from 'components/NetworkModal'
+import { FixedSubgraphHealthIndicator } from 'components/SubgraphHealthIndicator/FixedSubgraphHealthIndicator'
+import { useAccountEventListener } from 'hooks/useAccountEventListener'
 import useEagerConnect from 'hooks/useEagerConnect'
 import useEagerConnectMP from 'hooks/useEagerConnect.bmp'
-import { useAccountEventListener } from 'hooks/useAccountEventListener'
 import useSentryUser from 'hooks/useSentryUser'
-import useUserAgent from 'hooks/useUserAgent'
 import useThemeCookie from 'hooks/useThemeCookie'
+import useUserAgent from 'hooks/useUserAgent'
+import { NextPage } from 'next'
 import type { AppProps } from 'next/app'
+import dynamic from 'next/dynamic'
 import Head from 'next/head'
+import Script from 'next/script'
 import { Fragment } from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
-import { useStore, persistor } from 'state'
+import { persistor, useStore } from 'state'
 import { usePollBlockNumber } from 'state/block/hooks'
 import { usePollCoreFarmData } from 'state/farms/hooks'
-import { NextPage } from 'next'
 import { Blocklist, Updaters } from '..'
-import ErrorBoundary from '../components/ErrorBoundary'
+import { SentryErrorBoundary } from '../components/ErrorBoundary'
 import Menu from '../components/Menu'
 import Providers from '../Providers'
 import GlobalStyle from '../style/Global'
@@ -113,20 +113,26 @@ function MyApp(props: AppProps) {
 }
 
 type NextPageWithLayout = NextPage & {
-  Layout?: React.FC
+  Layout?: React.FC<React.PropsWithChildren<unknown>>
+  /** render component without all layouts */
+  pure?: true
+  /** is mini program */
   mp?: boolean
+  /**
+   * allow chain per page, empty array bypass chain block modal
+   * @default [ChainId.BSC]
+   * */
+  chains?: number[]
 }
 
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout
 }
 
-const ProductionErrorBoundary = process.env.NODE_ENV === 'production' ? ErrorBoundary : Fragment
+const ProductionErrorBoundary = process.env.NODE_ENV === 'production' ? SentryErrorBoundary : Fragment
 
-const App = ({ Component, pageProps, ...appProps }: AppPropsWithLayout) => {
-  const noNeedLayout = [`/451`].includes(appProps.router.pathname)
-
-  if (noNeedLayout) {
+const App = ({ Component, pageProps }: AppPropsWithLayout) => {
+  if (Component.pure) {
     return <Component {...pageProps} />
   }
 
@@ -144,6 +150,7 @@ const App = ({ Component, pageProps, ...appProps }: AppPropsWithLayout) => {
       <EasterEgg iterations={2} />
       <ToastListener />
       <FixedSubgraphHealthIndicator />
+      <NetworkModal pageSupportedChains={Component.chains} />
     </ProductionErrorBoundary>
   )
 }

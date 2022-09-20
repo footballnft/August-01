@@ -5,10 +5,10 @@ import capitalize from 'lodash/capitalize'
 import isEmpty from 'lodash/isEmpty'
 import { useGetNftFilters, useGetNftShowOnlyOnSale } from 'state/nftMarket/hooks'
 import { NftAttribute } from 'state/nftMarket/types'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { Item, ListTraitFilter } from 'views/Nft/market/components/Filters'
-import { useAppDispatch } from 'state'
-import { setShowOnlyOnSale } from 'state/nftMarket/reducer'
+import { useNftStorage } from 'state/nftMarket/storage'
+import groupBy from 'lodash/groupBy'
 import useGetCollectionDistribution from '../../hooks/useGetCollectionDistribution'
 import ClearAllButton from './ClearAllButton'
 import SortSelect from './SortSelect'
@@ -85,11 +85,11 @@ const ScrollableFlexContainer = styled(Flex)`
   }
 `
 
-const Filters: React.FC<FiltersProps> = ({ address, attributes }) => {
-  const dispatch = useAppDispatch()
+const Filters: React.FC<React.PropsWithChildren<FiltersProps>> = ({ address, attributes }) => {
   const { data } = useGetCollectionDistribution(address)
   const { t } = useTranslation()
   const showOnlyNftsOnSale = useGetNftShowOnlyOnSale(address)
+  const { setShowOnlyOnSale } = useNftStorage()
   const [activeButtonIndex, setActiveButtonIndex] = useState(showOnlyNftsOnSale ? 1 : 0)
 
   useEffect(() => {
@@ -97,17 +97,12 @@ const Filters: React.FC<FiltersProps> = ({ address, attributes }) => {
   }, [showOnlyNftsOnSale])
 
   const onActiveButtonChange = (newIndex: number) => {
-    dispatch(setShowOnlyOnSale({ collection: address, showOnlyOnSale: newIndex === 1 }))
+    setShowOnlyOnSale({ collection: address, showOnlyOnSale: newIndex === 1 })
   }
 
   const nftFilters = useGetNftFilters(address)
-  const attrsByType: Record<string, NftAttribute[]> = attributes?.reduce(
-    (accum, attr) => ({
-      ...accum,
-      [attr.traitType]: accum[attr.traitType] ? [...accum[attr.traitType], attr] : [attr],
-    }),
-    {},
-  )
+
+  const attrsByType: Record<string, NftAttribute[]> = attributes ? groupBy(attributes, (attr) => attr.traitType) : null
   const uniqueTraitTypes = attrsByType ? Object.keys(attrsByType) : []
 
   return (

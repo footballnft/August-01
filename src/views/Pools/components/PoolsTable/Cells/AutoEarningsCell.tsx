@@ -1,9 +1,9 @@
 import styled from 'styled-components'
-import { Skeleton, Text, useTooltip, HelpIcon, Flex, Box, useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { Skeleton, Text, useTooltip, HelpIcon, Flex, Box, useMatchBreakpoints } from '@pancakeswap/uikit'
 import { DeserializedPool, VaultKey, DeserializedPoolLockedVault } from 'state/types'
 import Balance from 'components/Balance'
 import { useVaultPoolByKey } from 'state/pools/hooks'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { getCakeVaultEarnings } from 'views/Pools/helpers'
 import BaseCell, { CellContent } from './BaseCell'
 import AutoEarningsBreakdown from '../../AutoEarningsBreakdown'
@@ -24,9 +24,9 @@ const HelpIconWrapper = styled.div`
   align-self: center;
 `
 
-const AutoEarningsCell: React.FC<AutoEarningsCellProps> = ({ pool, account }) => {
+const AutoEarningsCell: React.FC<React.PropsWithChildren<AutoEarningsCellProps>> = ({ pool, account }) => {
   const { t } = useTranslation()
-  const { isMobile } = useMatchBreakpointsContext()
+  const { isMobile } = useMatchBreakpoints()
   const { earningTokenPrice, vaultKey } = pool
 
   const vaultData = useVaultPoolByKey(vaultKey)

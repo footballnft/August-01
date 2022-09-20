@@ -8,7 +8,7 @@ const useThemeCookie = () => {
   const themeValue = theme.isDark ? 'dark' : 'light'
 
   useEffect(() => {
-    const getThemeCookie = Cookie.get(COOKIE_THEME_KEY)
+    const getThemeCookie = Cookie.get(COOKIE_THEME_KEY, { domain: THEME_DOMAIN })
 
     if (!getThemeCookie && getThemeCookie !== themeValue) {
       Cookie.set(COOKIE_THEME_KEY, themeValue, { domain: THEME_DOMAIN })

@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react'
 import { BSC_BLOCK_TIME } from 'config'
 import ifoV2Abi from 'config/abi/ifoV2.json'
 import ifoV3Abi from 'config/abi/ifoV3.json'
-import { bscTokens } from 'config/constants/tokens'
+import { bscTokens } from '@pancakeswap/tokens'
 import { Ifo, IfoStatus } from 'config/constants/types'
 
 import { useLpTokenPrice, usePriceCakeBusd } from 'state/farms/hooks'
@@ -15,6 +15,8 @@ import { getStatus } from '../helpers'
 // https://github.com/pancakeswap/pancake-contracts/blob/master/projects/ifo/contracts/IFOV2.sol#L431
 // 1,000,000,000 / 100
 const TAX_PRECISION = new BigNumber(10000000000)
+
+const NO_QUALIFIED_NFT_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const formatPool = (pool) => ({
   raisingAmountPool: pool ? new BigNumber(pool[0].toString()) : BIG_ZERO,
@@ -102,9 +104,9 @@ const useGetPublicIfoData = (ifo: Ifo): PublicIfoData => {
         vestingStartTime,
         basicVestingInformation,
         unlimitedVestingInformation,
-      ] = await multicallv2(
+      ] = await multicallv2({
         abi,
-        [
+        calls: [
           {
             address,
             name: 'startBlock',
@@ -159,7 +161,7 @@ const useGetPublicIfoData = (ifo: Ifo): PublicIfoData => {
             params: [1],
           },
         ].filter(Boolean),
-      )
+      })
 
       const poolBasicFormatted = formatPool(poolBasic)
       const poolUnlimitedFormatted = formatPool(poolUnlimited)
@@ -187,7 +189,10 @@ const useGetPublicIfoData = (ifo: Ifo): PublicIfoData => {
           ...poolBasicFormatted,
           taxRate: 0,
           pointThreshold: pointThreshold ? pointThreshold[0].toNumber() : 0,
-          admissionProfile: admissionProfile ? admissionProfile[0] : undefined,
+          admissionProfile:
+            Boolean(admissionProfile && admissionProfile[0]) && admissionProfile[0] !== NO_QUALIFIED_NFT_ADDRESS
+              ? admissionProfile[0]
+              : undefined,
           vestingInformation: formatVestingInfo(basicVestingInformation),
         },
         poolUnlimited: {

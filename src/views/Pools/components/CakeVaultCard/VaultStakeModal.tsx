@@ -13,9 +13,10 @@ import {
   IconButton,
   Skeleton,
   Box,
+  useToast,
 } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
-import { useWeb3React } from '@web3-react/core'
+import { useWeb3React } from '@pancakeswap/wagmi'
+import { useTranslation } from '@pancakeswap/localization'
 import { useAppDispatch } from 'state'
 
 import { usePriceCakeBusd } from 'state/farms/hooks'
@@ -27,7 +28,6 @@ import useTheme from 'hooks/useTheme'
 import useWithdrawalFeeTimer from 'views/Pools/hooks/useWithdrawalFeeTimer'
 import BigNumber from 'bignumber.js'
 import { getFullDisplayBalance, formatNumber, getDecimalAmount } from 'utils/formatBalance'
-import useToast from 'hooks/useToast'
 import useCatchTxError from 'hooks/useCatchTxError'
 import { fetchCakeVaultUserData } from 'state/pools'
 import { DeserializedPool, VaultKey } from 'state/types'
@@ -39,9 +39,7 @@ import { getFullDecimalMultiplier } from 'utils/getFullDecimalMultiplier'
 import { VaultRoiCalculatorModal } from '../Vault/VaultRoiCalculatorModal'
 import ConvertToLock from '../LockedPool/Common/ConvertToLock'
 import FeeSummary from './FeeSummary'
-
-// min deposit and withdraw amount
-const MIN_AMOUNT = new BigNumber(10000000000000)
+import { MIN_LOCK_AMOUNT } from '../../helpers'
 
 interface VaultStakeModalProps {
   pool: DeserializedPool
@@ -67,7 +65,7 @@ const AnnualRoiDisplay = styled(Text)`
   text-overflow: ellipsis;
 `
 
-const VaultStakeModal: React.FC<VaultStakeModalProps> = ({
+const VaultStakeModal: React.FC<React.PropsWithChildren<VaultStakeModalProps>> = ({
   pool,
   stakingMax,
   performanceFee,
@@ -149,7 +147,7 @@ const VaultStakeModal: React.FC<VaultStakeModalProps> = ({
 
   const handleWithdrawal = async () => {
     // trigger withdrawAll function if the withdrawal will leave 0.00001 CAKE or less
-    const isWithdrawingAll = stakingMax.minus(convertedStakeAmount).lte(MIN_AMOUNT)
+    const isWithdrawingAll = stakingMax.minus(convertedStakeAmount).lte(MIN_LOCK_AMOUNT)
 
     const receipt = await fetchWithCatchTxError(() => {
       // .toString() being called to fix a BigNumber error in prod
@@ -220,7 +218,7 @@ const VaultStakeModal: React.FC<VaultStakeModalProps> = ({
     <Modal
       title={isRemovingStake ? t('Unstake') : t('Stake in Pool')}
       onDismiss={onDismiss}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
     >
       <Flex alignItems="center" justifyContent="space-between" mb="8px">
         <Text bold>{isRemovingStake ? t('Unstake') : t('Stake')}:</Text>

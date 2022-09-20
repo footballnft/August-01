@@ -1,7 +1,7 @@
 import { Flex, Text, Heading } from '@pancakeswap/uikit'
 import Image from 'next/image'
 import styled from 'styled-components'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import useTheme from 'hooks/useTheme'
 import EasterAllBunniesImage from '../../../pngs/fan-token-all-bunnies.png'
 import { Heading1Text, Heading2Text } from '../../../components/CompetitionHeadingText'
@@ -50,7 +50,7 @@ const EasterBattleBanner = () => {
         {t('April')} 07—14, 2021
       </StyledText>
       <StyledHeading1Text>{t('Easter Battle')}</StyledHeading1Text>
-      <StyledHeading2Text background={theme.colors.gradients.gold} $fill>
+      <StyledHeading2Text background={theme.colors.gradientGold} $fill>
         {t('$200,000 in Prizes!')}
       </StyledHeading2Text>
       <StyledHeading scale="md" color={theme.isDark ? 'textSubtle' : 'inputSecondary'} mt="16px">

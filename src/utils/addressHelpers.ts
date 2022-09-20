@@ -7,8 +7,8 @@ export const getAddress = (address: Address, chainId?: number): string => {
   return address[chainId] ? address[chainId] : address[ChainId.BSC]
 }
 
-export const getMasterChefAddress = () => {
-  return getAddress(addresses.masterChef)
+export const getMasterChefAddress = (chainId?: number) => {
+  return getAddress(addresses.masterChef, chainId)
 }
 export const getMasterChefV1Address = () => {
   return getAddress(addresses.masterChefV1)
@@ -102,10 +102,21 @@ export const getNftSaleAddress = () => {
 export const getPancakeSquadAddress = () => {
   return getAddress(addresses.pancakeSquad)
 }
+export const getPotteryDrawAddress = () => {
+  return getAddress(addresses.potteryDraw)
+}
 
 export const getZapAddress = () => {
   return getAddress(addresses.zap)
 }
 export const getICakeAddress = () => {
   return getAddress(addresses.iCake)
+}
+
+export const getBCakeFarmBoosterAddress = () => {
+  return getAddress(addresses.bCakeFarmBooster)
+}
+
+export const getBCakeFarmBoosterProxyFactoryAddress = () => {
+  return getAddress(addresses.bCakeFarmBoosterProxyFactory)
 }

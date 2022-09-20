@@ -3,7 +3,7 @@ import ToggleView from 'components/ToggleView/ToggleView'
 import { useRouter } from 'next/router'
 import styled from 'styled-components'
 import { ButtonMenu, ButtonMenuItem, Toggle, Text, NotificationDot } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 
 const ToggleWrapper = styled.div`
   display: flex;
@@ -56,7 +56,7 @@ const PoolTabButtons = ({ stakedOnly, setStakedOnly, hasStakeInFinishedPools, vi
 
   const { t } = useTranslation()
 
-  const isExact = router.asPath === '/pools' || router.asPath === '/_mp/pools'
+  const isExact = router.pathname === '/pools' || router.pathname === '/_mp/pools'
 
   const viewModeToggle = <ToggleView idPrefix="clickPool" viewMode={viewMode} onToggle={setViewMode} />
 

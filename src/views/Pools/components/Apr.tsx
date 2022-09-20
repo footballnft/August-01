@@ -3,7 +3,7 @@ import { Text, Flex, useModal, CalculateIcon, Skeleton, FlexProps, Button } from
 import RoiCalculatorModal from 'components/RoiCalculatorModal'
 import { BalanceWithLoading } from 'components/Balance'
 import { DeserializedPool } from 'state/types'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import BigNumber from 'bignumber.js'
 import { BIG_ZERO } from 'utils/bigNumber'
 import { vaultPoolConfig } from 'config/constants/pools'
@@ -24,7 +24,7 @@ interface AprProps extends FlexProps {
   fontSize?: string
 }
 
-const Apr: React.FC<AprProps> = ({
+const Apr: React.FC<React.PropsWithChildren<AprProps>> = ({
   pool,
   showIcon,
   stakedBalance,
@@ -81,7 +81,10 @@ const Apr: React.FC<AprProps> = ({
           {hasPoolStarted || !shouldShowBlockCountdown ? (
             <>
               <BalanceWithLoading
-                onClick={openRoiModal}
+                onClick={(event) => {
+                  if (!showIcon) return
+                  openRoiModal(event)
+                }}
                 fontSize={fontSize}
                 isDisabled={isFinished}
                 value={isFinished ? 0 : apr}

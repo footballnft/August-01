@@ -1,25 +1,29 @@
-import { useWeb3React } from '@web3-react/core'
-import styled from 'styled-components'
-import { Button, Flex, IconButton, AddIcon, MinusIcon, useModal } from '@pancakeswap/uikit'
-import useToast from 'hooks/useToast'
-import useCatchTxError from 'hooks/useCatchTxError'
+import { useTranslation } from '@pancakeswap/localization'
+import { AddIcon, Button, Flex, IconButton, MinusIcon, useModal, useToast } from '@pancakeswap/uikit'
 import { ToastDescriptionWithTx } from 'components/Toast'
-import { useTranslation } from 'contexts/Localization'
-import { useAppDispatch } from 'state'
-import { fetchFarmUserDataAsync } from 'state/farms'
+import useCatchTxError from 'hooks/useCatchTxError'
+import { useCallback, useContext } from 'react'
+import styled from 'styled-components'
+
+import { TransactionResponse } from '@ethersproject/providers'
 import { useRouter } from 'next/router'
-import { useLpTokenPrice, useFarmUser, usePriceCakeBusd } from 'state/farms/hooks'
+import { useLpTokenPrice, usePriceCakeBusd } from 'state/farms/hooks'
 import DepositModal from '../DepositModal'
-import WithdrawModal from '../WithdrawModal'
-import useUnstakeFarms from '../../hooks/useUnstakeFarms'
-import useStakeFarms from '../../hooks/useStakeFarms'
-import { FarmWithStakedValue } from '../types'
 import StakedLP from '../StakedLP'
+import { FarmWithStakedValue } from '../types'
+import WithdrawModal from '../WithdrawModal'
+import { YieldBoosterStateContext } from '../YieldBooster/components/ProxyFarmContainer'
+import { YieldBoosterState } from '../YieldBooster/hooks/useYieldBoosterState'
 
 interface FarmCardActionsProps extends FarmWithStakedValue {
   lpLabel?: string
   addLiquidityUrl?: string
   displayApr?: string
+  onStake?: (value: string) => Promise<TransactionResponse>
+  onUnstake?: (value: string) => Promise<TransactionResponse>
+  onDone?: () => void
+  onApprove?: () => Promise<TransactionResponse>
+  isApproved?: boolean
 }
 
 const IconButtonWrapper = styled.div`
@@ -29,11 +33,11 @@ const IconButtonWrapper = styled.div`
   }
 `
 
-const StakeAction: React.FC<FarmCardActionsProps> = ({
+const StakeAction: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
+  pid,
   quoteToken,
   token,
   lpSymbol,
-  pid,
   multiplier,
   apr,
   displayApr,
@@ -42,18 +46,21 @@ const StakeAction: React.FC<FarmCardActionsProps> = ({
   lpTotalSupply,
   tokenAmountTotal,
   quoteTokenAmountTotal,
+  userData,
+  onStake,
+  onUnstake,
+  onDone,
+  onApprove,
+  isApproved,
 }) => {
   const { t } = useTranslation()
-  const { onStake } = useStakeFarms(pid)
-  const { onUnstake } = useUnstakeFarms(pid)
-  const { tokenBalance, stakedBalance } = useFarmUser(pid)
+  const { tokenBalance, stakedBalance } = userData
   const cakePrice = usePriceCakeBusd()
   const router = useRouter()
-  const dispatch = useAppDispatch()
-  const { account } = useWeb3React()
   const lpPrice = useLpTokenPrice(lpSymbol)
   const { toastSuccess } = useToast()
-  const { fetchWithCatchTxError } = useCatchTxError()
+  const { fetchWithCatchTxError, loading: pendingTx } = useCatchTxError()
+  const { boosterState } = useContext(YieldBoosterStateContext)
 
   const handleStake = async (amount: string) => {
     const receipt = await fetchWithCatchTxError(() => {
@@ -66,7 +73,7 @@ const StakeAction: React.FC<FarmCardActionsProps> = ({
           {t('Your funds have been staked in the farm')}
         </ToastDescriptionWithTx>,
       )
-      dispatch(fetchFarmUserDataAsync({ account, pids: [pid] }))
+      onDone()
     }
   }
 
@@ -81,12 +88,24 @@ const StakeAction: React.FC<FarmCardActionsProps> = ({
           {t('Your earnings have also been harvested to your wallet')}
         </ToastDescriptionWithTx>,
       )
-      dispatch(fetchFarmUserDataAsync({ account, pids: [pid] }))
+      onDone()
     }
   }
 
+  const handleApprove = useCallback(async () => {
+    const receipt = await fetchWithCatchTxError(() => {
+      return onApprove()
+    })
+    if (receipt?.status) {
+      toastSuccess(t('Contract Enabled'), <ToastDescriptionWithTx txHash={receipt.transactionHash} />)
+      onDone()
+    }
+  }, [onApprove, t, toastSuccess, fetchWithCatchTxError, onDone])
+
   const [onPresentDeposit] = useModal(
     <DepositModal
+      pid={pid}
+      lpTotalSupply={lpTotalSupply}
       max={tokenBalance}
       stakedBalance={stakedBalance}
       onConfirm={handleStake}
@@ -98,10 +117,17 @@ const StakeAction: React.FC<FarmCardActionsProps> = ({
       displayApr={displayApr}
       addLiquidityUrl={addLiquidityUrl}
       cakePrice={cakePrice}
+      showActiveBooster={boosterState === YieldBoosterState.ACTIVE}
     />,
   )
+
   const [onPresentWithdraw] = useModal(
-    <WithdrawModal max={stakedBalance} onConfirm={handleUnstake} tokenName={lpSymbol} />,
+    <WithdrawModal
+      showActiveBooster={boosterState === YieldBoosterState.ACTIVE}
+      max={stakedBalance}
+      onConfirm={handleUnstake}
+      tokenName={lpSymbol}
+    />,
   )
 
   const renderStakingButtons = () => {
@@ -125,6 +151,15 @@ const StakeAction: React.FC<FarmCardActionsProps> = ({
           <AddIcon color="primary" width="14px" />
         </IconButton>
       </IconButtonWrapper>
+    )
+  }
+
+  // TODO: Move this out to prevent unnecessary re-rendered
+  if (!isApproved) {
+    return (
+      <Button mt="8px" width="100%" disabled={pendingTx} onClick={handleApprove}>
+        {t('Enable Contract')}
+      </Button>
     )
   }
 

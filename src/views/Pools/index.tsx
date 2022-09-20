@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import styled from 'styled-components'
 import { BigNumber as EthersBigNumber } from '@ethersproject/bignumber'
 import { formatUnits } from '@ethersproject/units'
 import BigNumber from 'bignumber.js'
-import { useWeb3React } from '@web3-react/core'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import { Heading, Flex, Image, Text, Link } from '@pancakeswap/uikit'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import useIntersectionObserver from 'hooks/useIntersectionObserver'
 import { usePoolsPageFetch, usePoolsWithVault } from 'state/pools/hooks'
 import { latinise } from 'utils/latinise'
@@ -23,6 +24,7 @@ import { useRouter } from 'next/router'
 import Loading from 'components/Loading'
 import { useInitialBlock } from 'state/block/hooks'
 import { BSC_BLOCK_TIME } from 'config'
+import ScrollToTopButton from 'components/ScrollToTopButton/ScrollToTopButtonV2'
 import PoolCard from './components/PoolCard'
 import CakeVaultCard from './components/CakeVaultCard'
 import PoolTabButtons from './components/PoolTabButtons'
@@ -157,7 +159,7 @@ const sortPools = (account: string, sortOption: string, pools: DeserializedPool[
 
 const POOL_START_BLOCK_THRESHOLD = (60 / BSC_BLOCK_TIME) * 4
 
-const Pools: React.FC = () => {
+const Pools: React.FC<React.PropsWithChildren> = () => {
   const router = useRouter()
   const { t } = useTranslation()
   const { account } = useWeb3React()
@@ -166,7 +168,12 @@ const Pools: React.FC = () => {
   const [viewMode, setViewMode] = useUserPoolsViewMode()
   const [numberOfPoolsVisible, setNumberOfPoolsVisible] = useState(NUMBER_OF_POOLS_VISIBLE)
   const { observerRef, isIntersecting } = useIntersectionObserver()
-  const [searchQuery, setSearchQuery] = useState('')
+  const normalizedUrlSearch = useMemo(
+    () => (typeof router?.query?.search === 'string' ? router.query.search : ''),
+    [router.query],
+  )
+  const [_searchQuery, setSearchQuery] = useState('')
+  const searchQuery = normalizedUrlSearch && !_searchQuery ? normalizedUrlSearch : _searchQuery
   const [sortOption, setSortOption] = useState('hot')
   const chosenPoolsLength = useRef(0)
   const initialBlock = useInitialBlock()
@@ -215,7 +222,6 @@ const Pools: React.FC = () => {
       })
     }
   }, [isIntersecting])
-
   const showFinishedPools = router.pathname.includes('history')
 
   const handleChangeSearchQuery = useCallback(
@@ -255,7 +261,7 @@ const Pools: React.FC = () => {
     </CardLayout>
   )
 
-  const tableLayout = <PoolsTable pools={chosenPools} account={account} />
+  const tableLayout = <PoolsTable urlSearch={normalizedUrlSearch} pools={chosenPools} account={account} />
 
   return (
     <>
@@ -320,7 +326,7 @@ const Pools: React.FC = () => {
               <Text fontSize="12px" bold color="textSubtle" textTransform="uppercase">
                 {t('Search')}
               </Text>
-              <SearchInput onChange={handleChangeSearchQuery} placeholder="Search Pools" />
+              <SearchInput initialValue={searchQuery} onChange={handleChangeSearchQuery} placeholder="Search Pools" />
             </LabelWrapper>
           </FilterContainer>
         </PoolControls>
@@ -350,6 +356,7 @@ const Pools: React.FC = () => {
           height={184.5}
         />
       </Page>
+      {createPortal(<ScrollToTopButton />, document.body)}
     </>
   )
 }

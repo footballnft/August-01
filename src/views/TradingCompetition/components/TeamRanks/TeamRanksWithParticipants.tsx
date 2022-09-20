@@ -3,7 +3,7 @@ import { StaticImageData } from 'next/dist/client/image'
 import { Flex, Box, Text, Skeleton, AccountFilledIcon } from '@pancakeswap/uikit'
 import Image from 'next/image'
 import orderBy from 'lodash/orderBy'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { TeamRanksProps } from '../../types'
 import useGetParticipants from './Podium/useGetParticipants'
 import TopTradersCard from './TopTradersCard'
@@ -54,7 +54,7 @@ const TotalParticipantsWrapper = styled(Box)`
 `
 
 const TotalParticipantsCloud = styled(Flex)`
-  background: ${({ theme }) => theme.colors.gradients.cardHeader};
+  background: ${({ theme }) => theme.colors.gradientCardHeader};
   padding: 24px;
   border-radius: ${({ theme }) => theme.radii.card};
   width: 100%;
@@ -69,7 +69,7 @@ interface TeamRanksWithParticipantsProps extends TeamRanksProps {
   subgraphName: string
 }
 
-const TeamRanksWithParticipants: React.FC<TeamRanksWithParticipantsProps> = ({
+const TeamRanksWithParticipants: React.FC<React.PropsWithChildren<TeamRanksWithParticipantsProps>> = ({
   image,
   team1LeaderboardInformation,
   team2LeaderboardInformation,

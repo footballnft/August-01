@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { useMatchBreakpoints } from '@pancakeswap/uikit'
 import { usePool, useDeserializedPoolByVaultKey } from 'state/pools/hooks'
 import { VaultKey } from 'state/types'
 
@@ -14,14 +14,17 @@ import AutoAprCell from './Cells/AutoAprCell'
 import StakedCell from './Cells/StakedCell'
 import ExpandRow from './ExpandRow'
 
-export const VaultPoolRow: React.FC<{ vaultKey: VaultKey; account: string }> = memo(({ vaultKey, account }) => {
-  const { isXs, isSm, isMd, isLg, isXl, isXxl } = useMatchBreakpointsContext()
+export const VaultPoolRow: React.FC<
+  React.PropsWithChildren<{ vaultKey: VaultKey; account: string; initialActivity?: boolean }>
+> = memo(({ vaultKey, account, initialActivity }) => {
+  const { isXs, isSm, isMd, isLg, isXl, isXxl } = useMatchBreakpoints()
   const isLargerScreen = isLg || isXl || isXxl
   const isXLargerScreen = isXl || isXxl
   const pool = useDeserializedPoolByVaultKey(vaultKey)
 
   return (
     <ExpandRow
+      initialActivity={initialActivity}
       panel={
         <ActionPanel account={account} pool={pool} expanded breakpoints={{ isXs, isSm, isMd, isLg, isXl, isXxl }} />
       }
@@ -35,13 +38,18 @@ export const VaultPoolRow: React.FC<{ vaultKey: VaultKey; account: string }> = m
   )
 })
 
-const PoolRow: React.FC<{ sousId: number; account: string }> = ({ sousId, account }) => {
-  const { isXs, isSm, isMd, isLg, isXl, isXxl, isDesktop } = useMatchBreakpointsContext()
+const PoolRow: React.FC<React.PropsWithChildren<{ sousId: number; account: string; initialActivity?: boolean }>> = ({
+  sousId,
+  account,
+  initialActivity,
+}) => {
+  const { isXs, isSm, isMd, isLg, isXl, isXxl, isDesktop } = useMatchBreakpoints()
   const isLargerScreen = isLg || isXl || isXxl
   const { pool } = usePool(sousId)
 
   return (
     <ExpandRow
+      initialActivity={initialActivity}
       panel={
         <ActionPanel account={account} pool={pool} expanded breakpoints={{ isXs, isSm, isMd, isLg, isXl, isXxl }} />
       }

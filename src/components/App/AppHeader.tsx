@@ -5,10 +5,11 @@ import GlobalSettings from 'components/Menu/GlobalSettings'
 import Link from 'next/link'
 import Transactions from './Transactions'
 import QuestionHelper from '../QuestionHelper'
+import { SettingsMode } from '../Menu/GlobalSettings/types'
 
 interface Props {
   title: string
-  subtitle: string
+  subtitle?: string
   helper?: string
   backTo?: string | (() => void)
   noConfig?: boolean
@@ -22,7 +23,7 @@ const AppHeaderContainer = styled(Flex)`
   border-bottom: 1px solid ${({ theme }) => theme.colors.cardBorder};
 `
 
-const AppHeader: React.FC<Props> = ({ title, subtitle, helper, backTo, noConfig = false }) => {
+const AppHeader: React.FC<React.PropsWithChildren<Props>> = ({ title, subtitle, helper, backTo, noConfig = false }) => {
   const [expertMode] = useExpertModeManager()
 
   return (
@@ -42,18 +43,20 @@ const AppHeader: React.FC<Props> = ({ title, subtitle, helper, backTo, noConfig 
           ))}
         <Flex flexDirection="column" width="100%">
           <Flex mb="8px" alignItems="center" justifyContent="space-between">
-            <Heading as="h2">{title}</Heading>
+            <Flex>
+              <Heading as="h2">{title}</Heading>
+              {helper && <QuestionHelper text={helper} ml="4px" placement="top-start" />}
+            </Flex>
             {!noConfig && (
               <Flex alignItems="center">
                 <NotificationDot show={expertMode}>
-                  <GlobalSettings />
+                  <GlobalSettings mode={SettingsMode.SWAP_LIQUIDITY} />
                 </NotificationDot>
                 <Transactions />
               </Flex>
             )}
           </Flex>
           <Flex alignItems="center">
-            {helper && <QuestionHelper text={helper} mr="4px" placement="top-start" />}
             <Text color="textSubtle" fontSize="14px">
               {subtitle}
             </Text>

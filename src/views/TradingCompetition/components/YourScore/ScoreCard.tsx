@@ -15,12 +15,12 @@ import {
 } from '@pancakeswap/uikit'
 import { CLAIM, OVER } from 'config/constants/trading-competition/phases'
 import ConnectWalletButton from 'components/ConnectWalletButton'
-import { useTranslation } from 'contexts/Localization'
+import SubgraphHealthIndicator from 'components/SubgraphHealthIndicator'
+import { useTranslation } from '@pancakeswap/localization'
 import ClaimModal from '../ClaimModal'
 import CardUserInfo from './CardUserInfo'
 import ShareImageModal from '../ShareImageModal'
 import { YourScoreProps } from '../../types'
-import { SubgraphHealthIndicator } from '../../../../components/SubgraphHealthIndicator'
 
 const StyledCard = styled(Card)`
   ${({ theme }) => theme.mediaQueries.sm} {
@@ -59,7 +59,7 @@ interface ScoreCardProps extends YourScoreProps {
   subgraphName?: string
 }
 
-const ScoreCard: React.FC<ScoreCardProps> = ({
+const ScoreCard: React.FC<React.PropsWithChildren<ScoreCardProps>> = ({
   userPrizeGrid,
   extraUserRankBox,
   flippersShareImage,

@@ -1,7 +1,7 @@
-import { Price } from '@pancakeswap/sdk'
+import { Price, Currency } from '@pancakeswap/sdk'
 import { Flex, Text } from '@pancakeswap/uikit'
 import { multiplyPriceByAmount } from 'utils/prices'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { useConfig } from 'views/Predictions/context/ConfigProvider'
 import { formatBnb } from '../helpers'
 
@@ -10,7 +10,7 @@ type SummaryType = 'won' | 'lost' | 'entered'
 interface SummaryRowProps {
   type: SummaryType
   summary: any
-  bnbBusdPrice: Price
+  bnbBusdPrice: Price<Currency, Currency>
 }
 
 const summaryTypeColors = {
@@ -25,7 +25,7 @@ const summaryTypeSigns = {
   entered: '',
 }
 
-const SummaryRow: React.FC<SummaryRowProps> = ({ type, summary, bnbBusdPrice }) => {
+const SummaryRow: React.FC<React.PropsWithChildren<SummaryRowProps>> = ({ type, summary, bnbBusdPrice }) => {
   const { t } = useTranslation()
 
   const color = summaryTypeColors[type]
@@ -35,7 +35,7 @@ const SummaryRow: React.FC<SummaryRowProps> = ({ type, summary, bnbBusdPrice }) 
   const typeTranslationKey = type.charAt(0).toUpperCase() + type.slice(1)
   const displayAmount = type === 'won' ? summary[type].payout : amount
   const amountInUsd = multiplyPriceByAmount(bnbBusdPrice, displayAmount)
-  const { token } = useConfig()
+  const { token, displayedDecimals } = useConfig()
   const roundsInPercentsDisplay = !Number.isNaN(parseFloat(roundsInPercents)) ? `${roundsInPercents}%` : '0%'
 
   return (
@@ -54,7 +54,7 @@ const SummaryRow: React.FC<SummaryRowProps> = ({ type, summary, bnbBusdPrice }) 
         </Flex>
         <Flex flex="3" flexDirection="column">
           <Text bold fontSize="20px" color={color}>
-            {`${summaryTypeSigns[type]}${formatBnb(displayAmount)} ${token.symbol}`}
+            {`${summaryTypeSigns[type]}${formatBnb(displayAmount, displayedDecimals)} ${token.symbol}`}
           </Text>
           <Text fontSize="12px" color="textSubtle">
             {`~$${amountInUsd.toFixed(2)}`}

@@ -2,7 +2,7 @@ import { Children } from 'react'
 import styled from 'styled-components'
 import Spacer from './Spacer'
 
-const ModalActions: React.FC = ({ children }) => {
+const ModalActions: React.FC<React.PropsWithChildren> = ({ children }) => {
   const l = Children.toArray(children).length
   return (
     <StyledModalActions>
@@ -21,7 +21,7 @@ const StyledModalActions = styled.div`
   background-color: ${(props) => props.theme.colors.primaryDark}00;
   display: flex;
   margin: 0;
-  padding: ${(props) => props.theme.spacing[4]}px 0;
+  padding: ${(props) => props.theme.spacing[4]} 0;
 `
 
 const StyledModalAction = styled.div`

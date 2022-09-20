@@ -1,36 +1,36 @@
-import { useMemo, useState } from 'react'
-import styled from 'styled-components'
-import { useWeb3React } from '@web3-react/core'
-import BigNumber from 'bignumber.js'
 import { MaxUint256 } from '@ethersproject/constants'
 import { parseUnits } from '@ethersproject/units'
+import { useTranslation } from '@pancakeswap/localization'
+import { bscTokens } from '@pancakeswap/tokens'
 import {
+  BalanceInput,
+  Box,
+  Button,
+  Flex,
+  Image,
+  Link,
+  Message,
   Modal,
   ModalBody,
   Text,
-  Image,
-  Button,
-  BalanceInput,
-  Flex,
-  useTooltip,
   TooltipText,
-  Box,
-  Link,
-  Message,
+  useToast,
+  useTooltip,
 } from '@pancakeswap/uikit'
-import { PoolIds, Ifo } from 'config/constants/types'
-import { WalletIfoData, PublicIfoData } from 'views/Ifos/types'
-import { useTranslation } from 'contexts/Localization'
-import { formatNumber, getBalanceAmount } from 'utils/formatBalance'
+import { useWeb3React } from '@pancakeswap/wagmi'
+import BigNumber from 'bignumber.js'
 import ApproveConfirmButtons from 'components/ApproveConfirmButtons'
 import { ToastDescriptionWithTx } from 'components/Toast'
+import { DEFAULT_TOKEN_DECIMAL } from 'config'
+import { Ifo, PoolIds } from 'config/constants/types'
 import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
 import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
-import useToast from 'hooks/useToast'
-import { DEFAULT_TOKEN_DECIMAL } from 'config'
 import { useERC20 } from 'hooks/useContract'
-import { bscTokens } from 'config/constants/tokens'
+import { useMemo, useState } from 'react'
+import styled from 'styled-components'
+import { formatNumber, getBalanceAmount } from 'utils/formatBalance'
 import { requiresApproval } from 'utils/requiresApproval'
+import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
 
 const MessageTextLink = styled(Link)`
   display: inline;
@@ -55,7 +55,7 @@ const multiplierValues = [0.1, 0.25, 0.5, 0.75, 1]
 // Default value for transaction setting, tweak based on BSC network congestion.
 const gasPrice = parseUnits('10', 'gwei').toString()
 
-const SmallAmountNotice: React.FC<{ url: string }> = ({ url }) => {
+const SmallAmountNotice: React.FC<React.PropsWithChildren<{ url: string }>> = ({ url }) => {
   const { t } = useTranslation()
 
   return (
@@ -74,7 +74,7 @@ const SmallAmountNotice: React.FC<{ url: string }> = ({ url }) => {
   )
 }
 
-const ContributeModal: React.FC<Props> = ({
+const ContributeModal: React.FC<React.PropsWithChildren<Props>> = ({
   poolId,
   ifo,
   publicIfoData,
@@ -197,7 +197,7 @@ const ContributeModal: React.FC<Props> = ({
                 src={
                   ifo.currency.symbol === 'CAKE'
                     ? '/images/cake.svg'
-                    : `/images/farms/${currency.symbol.split(' ')[0].toLocaleLowerCase()}.svg`
+                    : `/images/farms/${currency.symbol.split(' ')[0].toLowerCase()}.svg`
                 }
                 width={24}
                 height={24}

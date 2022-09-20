@@ -13,11 +13,11 @@ import {
   SubMenuItem,
   EllipsisIcon,
   LinkExternal,
-  useMatchBreakpoints,
+  useMatchBreakpointsContext,
 } from '@pancakeswap/uikit'
-import { getBscScanLink } from 'utils'
+import { getBlockExploreLink } from 'utils'
 import { getBalanceNumber } from 'utils/formatBalance'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { usePriceCakeBusd } from 'state/farms/hooks'
 import { Bidder } from 'config/constants/types'
 import WhitelistedBiddersModal from '../WhitelistedBiddersModal'
@@ -35,7 +35,7 @@ const GridCell = styled(Flex)<{ isTopPosition: boolean }>`
   align-items: center;
   border-bottom: 1px solid ${({ theme }) => theme.colors.cardBorder};
 
-  ${({ theme, isTopPosition }) => isTopPosition && `background-color: ${theme.colors.warning}2D;`}
+  ${({ theme, isTopPosition }) => isTopPosition && `background-color: ${theme.colors.warning2D};`}
 `
 
 interface LeaderboardRowProps {
@@ -44,7 +44,11 @@ interface LeaderboardRowProps {
   isMobile: boolean
 }
 
-const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ bidder, cakePriceBusd, isMobile }) => {
+const LeaderboardRow: React.FC<React.PropsWithChildren<LeaderboardRowProps>> = ({
+  bidder,
+  cakePriceBusd,
+  isMobile,
+}) => {
   const { t } = useTranslation()
   const { isTopPosition, position, samePositionAsAbove, farmName, tokenName, amount, projectSite, lpAddress, account } =
     bidder
@@ -99,7 +103,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ bidder, cakePriceBusd, 
             </SubMenuItem>
           )}
           {account && (
-            <SubMenuItem as={LinkExternal} href={getBscScanLink(account, 'address')} bold={false} color="text">
+            <SubMenuItem as={LinkExternal} href={getBlockExploreLink(account, 'address')} bold={false} color="text">
               {t('Bidder Address')}
             </SubMenuItem>
           )}
@@ -109,12 +113,15 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ bidder, cakePriceBusd, 
   )
 }
 
-const AuctionLeaderboardTable: React.FC<{ bidders: Bidder[]; noBidsText: string }> = ({ bidders, noBidsText }) => {
+const AuctionLeaderboardTable: React.FC<React.PropsWithChildren<{ bidders: Bidder[]; noBidsText: string }>> = ({
+  bidders,
+  noBidsText,
+}) => {
   const [visibleBidders, setVisibleBidders] = useState(10)
   const cakePriceBusd = usePriceCakeBusd()
   const { t } = useTranslation()
 
-  const { isMobile } = useMatchBreakpoints()
+  const { isMobile } = useMatchBreakpointsContext()
   const [onShowWhitelistedBidders] = useModal(<WhitelistedBiddersModal />)
 
   const totalBidders = bidders.length

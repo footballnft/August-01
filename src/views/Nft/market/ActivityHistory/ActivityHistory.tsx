@@ -10,16 +10,16 @@ import {
   Table,
   Text,
   Th,
-  useMatchBreakpointsContext,
+  useMatchBreakpoints,
 } from '@pancakeswap/uikit'
 import { getCollectionActivity } from 'state/nftMarket/helpers'
 import Container from 'components/Layout/Container'
 import TableLoader from 'components/TableLoader'
 import { Activity, Collection, NftToken } from 'state/nftMarket/types'
-import { useTranslation } from 'contexts/Localization'
+import { useTranslation } from '@pancakeswap/localization'
 import { useBNBBusdPrice } from 'hooks/useBUSDPrice'
 import useTheme from 'hooks/useTheme'
-import useLastUpdated from 'hooks/useLastUpdated'
+import { useLastUpdated } from '@pancakeswap/hooks'
 import { useGetNftActivityFilters } from 'state/nftMarket/hooks'
 import { Arrow, PageButtons } from '../components/PaginationButtons'
 import NoNftsImage from '../components/Activity/NoNftsImage'
@@ -36,7 +36,7 @@ interface ActivityHistoryProps {
   collection?: Collection
 }
 
-const ActivityHistory: React.FC<ActivityHistoryProps> = ({ collection }) => {
+const ActivityHistory: React.FC<React.PropsWithChildren<ActivityHistoryProps>> = ({ collection }) => {
   const dispatch = useAppDispatch()
   const { address: collectionAddress } = collection || { address: '' }
   const nftActivityFilters = useGetNftActivityFilters(collectionAddress)
@@ -58,7 +58,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ collection }) => {
   const [queryPage, setQueryPage] = useState(1)
   const { lastUpdated, setLastUpdated: refresh } = useLastUpdated()
   const bnbBusdPrice = useBNBBusdPrice()
-  const { isXs, isSm, isMd } = useMatchBreakpointsContext()
+  const { isXs, isSm, isMd } = useMatchBreakpoints()
 
   const nftActivityFiltersString = JSON.stringify(nftActivityFilters)
 
@@ -118,7 +118,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ collection }) => {
           flexDirection={['column', 'column', 'row']}
           flexWrap={isMd ? 'wrap' : 'nowrap'}
         >
-          <ActivityFilters address={collection?.address || ''} />
+          <ActivityFilters address={collection?.address || ''} nftActivityFilters={nftActivityFilters} />
           <Button
             scale="sm"
             disabled={isLoading}

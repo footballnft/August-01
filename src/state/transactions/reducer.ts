@@ -9,6 +9,7 @@ import {
   finalizeTransaction,
   SerializableTransactionReceipt,
   TransactionType,
+  clearAllChainTransactions,
 } from './actions'
 import { resetUserState } from '../global/actions'
 
@@ -20,6 +21,7 @@ export interface TransactionDetails {
   type?: TransactionType
   order?: Order
   summary?: string
+  translatableSummary?: { text: string; data?: Record<string, string | number> }
   claim?: { recipient: string }
   receipt?: SerializableTransactionReceipt
   lastCheckedBlockNumber?: number
@@ -40,17 +42,23 @@ export default createReducer(initialState, (builder) =>
   builder
     .addCase(
       addTransaction,
-      (transactions, { payload: { chainId, from, hash, approval, summary, claim, type, order } }) => {
+      (
+        transactions,
+        { payload: { chainId, from, hash, approval, summary, translatableSummary, claim, type, order } },
+      ) => {
         if (transactions[chainId]?.[hash]) {
           throw Error('Attempted to add existing transaction.')
         }
         const txs = transactions[chainId] ?? {}
-        txs[hash] = { hash, approval, summary, claim, from, addedTime: now(), type, order }
+        txs[hash] = { hash, approval, summary, translatableSummary, claim, from, addedTime: now(), type, order }
         transactions[chainId] = txs
         if (order) saveOrder(chainId, from, order, true)
       },
     )
-    .addCase(clearAllTransactions, (transactions, { payload: { chainId } }) => {
+    .addCase(clearAllTransactions, () => {
+      return {}
+    })
+    .addCase(clearAllChainTransactions, (transactions, { payload: { chainId } }) => {
       if (!transactions[chainId]) return
       transactions[chainId] = {}
     })
@@ -79,8 +87,8 @@ export default createReducer(initialState, (builder) =>
         confirmOrderCancellation(chainId, receipt.from, hash, receipt.status !== 0)
       }
     })
-    .addCase(resetUserState, (transactions, { payload: { chainId } }) => {
-      if (transactions[chainId]) {
+    .addCase(resetUserState, (transactions, { payload: { chainId, newChainId } }) => {
+      if (!newChainId && transactions[chainId]) {
         transactions[chainId] = {}
       }
     }),

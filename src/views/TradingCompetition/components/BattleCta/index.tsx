@@ -7,15 +7,14 @@ import {
   LaurelRightIcon,
   Button,
   CheckmarkCircleIcon,
-  useWalletModal,
   useModal,
   Text,
   Box,
   TwitterIcon,
 } from '@pancakeswap/uikit'
-import useAuth from 'hooks/useAuth'
-import { useTranslation } from 'contexts/Localization'
-import { FINISHED, OVER } from 'config/constants/trading-competition/phases'
+import { useWallet } from 'hooks/useWallet'
+import { useTranslation } from '@pancakeswap/localization'
+import { FINISHED, OVER, REGISTRATION } from 'config/constants/trading-competition/phases'
 import { useRouter } from 'next/router'
 import { useCallback } from 'react'
 import RegisterModal from '../RegisterModal'
@@ -58,7 +57,7 @@ const StyledHeadingText = styled(Heading2Text)`
   padding: 0px 10px;
 `
 
-const BattleCta: React.FC<CompetitionProps> = ({
+const BattleCta: React.FC<React.PropsWithChildren<CompetitionProps>> = ({
   userTradingInformation,
   currentPhase,
   account,
@@ -75,8 +74,7 @@ const BattleCta: React.FC<CompetitionProps> = ({
 }) => {
   const router = useRouter()
   const { t } = useTranslation()
-  const { login } = useAuth()
-  const { onPresentConnectModal } = useWalletModal(login, t)
+  const { onPresentConnectModal } = useWallet()
   const [onPresentRegisterModal] = useModal(
     <RegisterModal profile={profile} onRegisterSuccess={onRegisterSuccess} />,
     false,
@@ -118,15 +116,14 @@ const BattleCta: React.FC<CompetitionProps> = ({
     if (!account) {
       return t('Connect Wallet')
     }
-    // User not registered
-    if (!hasRegistered) {
+    // User not registered and competition in register
+    if (currentPhase.state === REGISTRATION && !hasRegistered) {
       return t('I want to Battle!')
     }
-    // User registered and competition live
+    // Competition live
     if (isCompetitionLive) {
       return t('Trade Now')
     }
-
     // User registered and competition finished
     if (hasCompetitionEnded) {
       // Claim period has ended

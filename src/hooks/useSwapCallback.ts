@@ -1,17 +1,19 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Contract } from '@ethersproject/contracts'
-import { SwapParameters, Trade } from '@pancakeswap/sdk'
-import { useTranslation } from 'contexts/Localization'
+import { SwapParameters, Trade, Currency, TradeType } from '@pancakeswap/sdk'
+import { useTranslation } from '@pancakeswap/localization'
+import isZero from '@pancakeswap/utils/isZero'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useMemo } from 'react'
 import { useGasPrice } from 'state/user/hooks'
-import truncateHash from 'utils/truncateHash'
+import truncateHash from '@pancakeswap/utils/truncateHash'
+import { StableTrade } from 'views/Swap/StableSwap/hooks/useStableTradeExactIn'
+
 import { INITIAL_ALLOWED_SLIPPAGE } from '../config/constants'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import { calculateGasMargin, isAddress } from '../utils'
-import isZero from '../utils/isZero'
-import { useSwapCallArguments } from './useSwapCallArguments'
 import { transactionErrorToUserReadableMessage } from '../utils/transactionErrorToUserReadableMessage'
+import { basisPointsToPercent } from '../utils/exchange'
 
 export enum SwapCallbackState {
   INVALID,
@@ -36,17 +38,18 @@ interface SwapCallEstimate {
   call: SwapCall
 }
 
+type ITrade = Trade<Currency, Currency, TradeType> | StableTrade | undefined
+
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
 export function useSwapCallback(
-  trade: Trade | undefined, // trade to execute, required
+  trade: ITrade, // trade to execute, required
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
   recipientAddress: string | null, // the address of the recipient of the trade, or null if swap should be returned to sender
+  swapCalls: SwapCall[],
 ): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
-  const { account, chainId, library } = useActiveWeb3React()
+  const { account, chainId } = useActiveWeb3React()
   const gasPrice = useGasPrice()
-
-  const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddress)
 
   const { t } = useTranslation()
 
@@ -55,7 +58,7 @@ export function useSwapCallback(
   const recipient = recipientAddress === null ? account : recipientAddress
 
   return useMemo(() => {
-    if (!trade || !library || !account || !chainId) {
+    if (!trade || !account || !chainId) {
       return { state: SwapCallbackState.INVALID, callback: null, error: 'Missing dependencies' }
     }
     if (!recipient) {
@@ -128,19 +131,48 @@ export function useSwapCallback(
           .then((response: any) => {
             const inputSymbol = trade.inputAmount.currency.symbol
             const outputSymbol = trade.outputAmount.currency.symbol
-            const inputAmount = trade.inputAmount.toSignificant(3)
-            const outputAmount = trade.outputAmount.toSignificant(3)
+            const pct = basisPointsToPercent(allowedSlippage)
+            const inputAmount =
+              trade.tradeType === TradeType.EXACT_INPUT
+                ? trade.inputAmount.toSignificant(3)
+                : trade.maximumAmountIn(pct).toSignificant(3)
+            const outputAmount =
+              trade.tradeType === TradeType.EXACT_OUTPUT
+                ? trade.outputAmount.toSignificant(3)
+                : trade.minimumAmountOut(pct).toSignificant(3)
 
-            const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
-            const withRecipient =
-              recipient === account
-                ? base
-                : `${base} to ${
-                    recipientAddress && isAddress(recipientAddress) ? truncateHash(recipientAddress) : recipientAddress
-                  }`
+            const base = `Swap ${
+              trade.tradeType === TradeType.EXACT_OUTPUT ? 'max.' : ''
+            } ${inputAmount} ${inputSymbol} for ${
+              trade.tradeType === TradeType.EXACT_INPUT ? 'min.' : ''
+            } ${outputAmount} ${outputSymbol}`
+
+            const recipientAddressText =
+              recipientAddress && isAddress(recipientAddress) ? truncateHash(recipientAddress) : recipientAddress
+
+            const withRecipient = recipient === account ? base : `${base} to ${recipientAddressText}`
+
+            const translatableWithRecipient =
+              trade.tradeType === TradeType.EXACT_OUTPUT
+                ? recipient === account
+                  ? 'Swap max. %inputAmount% %inputSymbol% for %outputAmount% %outputSymbol%'
+                  : 'Swap max. %inputAmount% %inputSymbol% for %outputAmount% %outputSymbol% to %recipientAddress%'
+                : recipient === account
+                ? 'Swap %inputAmount% %inputSymbol% for min. %outputAmount% %outputSymbol%'
+                : 'Swap %inputAmount% %inputSymbol% for min. %outputAmount% %outputSymbol% to %recipientAddress%'
 
             addTransaction(response, {
               summary: withRecipient,
+              translatableSummary: {
+                text: translatableWithRecipient,
+                data: {
+                  inputAmount,
+                  inputSymbol,
+                  outputAmount,
+                  outputSymbol,
+                  ...(recipient !== account && { recipientAddress: recipientAddressText }),
+                },
+              },
               type: 'swap',
             })
 
@@ -159,5 +191,5 @@ export function useSwapCallback(
       },
       error: null,
     }
-  }, [trade, library, account, chainId, recipient, recipientAddress, swapCalls, gasPrice, t, addTransaction])
+  }, [trade, account, chainId, recipient, recipientAddress, swapCalls, gasPrice, t, addTransaction, allowedSlippage])
 }

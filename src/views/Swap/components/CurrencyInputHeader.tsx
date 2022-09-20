@@ -14,10 +14,11 @@ import TransactionsModal from 'components/App/Transactions/TransactionsModal'
 import GlobalSettings from 'components/Menu/GlobalSettings'
 import { useExpertModeManager } from 'state/user/hooks'
 import RefreshIcon from 'components/Svg/RefreshIcon'
-import { useCallback } from 'react'
+import { ReactElement, useCallback } from 'react'
+import { SettingsMode } from '../../../components/Menu/GlobalSettings/types'
 
 interface Props {
-  title: string
+  title: string | ReactElement
   subtitle: string
   noConfig?: boolean
   setIsChartDisplayed?: React.Dispatch<React.SetStateAction<boolean>>
@@ -38,7 +39,7 @@ const ColoredIconButton = styled(IconButton)`
   color: ${({ theme }) => theme.colors.textSubtle};
 `
 
-const CurrencyInputHeader: React.FC<Props> = ({
+const CurrencyInputHeader: React.FC<React.PropsWithChildren<Props>> = ({
   title,
   subtitle,
   setIsChartDisplayed,
@@ -66,7 +67,7 @@ const CurrencyInputHeader: React.FC<Props> = ({
         </Flex>
         <Flex>
           <NotificationDot show={expertMode}>
-            <GlobalSettings color="textSubtle" mr="0" />
+            <GlobalSettings color="textSubtle" mr="0" mode={SettingsMode.SWAP_LIQUIDITY} />
           </NotificationDot>
           <IconButton onClick={onPresentTransactionsModal} variant="text" scale="sm">
             <HistoryIcon color="textSubtle" width="24px" />
