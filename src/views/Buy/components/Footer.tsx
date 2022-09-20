@@ -6,7 +6,7 @@ import Container from 'components/Layout/Container'
 import DesktopImage from './DesktopImage'
 
 const StyledFooter = styled(Box)`
-  background: ${({ theme }) => theme.colors.gradientBubblegum};
+  background: ${({ theme }) => theme.colors.gradients.bubblegum};
   padding-bottom: 32px;
   padding-top: 32px;
 `
