@@ -38,7 +38,7 @@ const MobileModal: React.FC<React.PropsWithChildren<MobileModalProps>> = ({
       title={t('Transaction Details')}
       maxWidth="320px"
       onDismiss={onDismiss}
-      headerBackground={theme.colors.gradientCardHeader}
+      headerBackground={theme.colors.gradients.cardHeader}
     >
       <Flex flexDirection="column">
         <Flex alignItems="center" mb="16px" justifyContent="space-between">

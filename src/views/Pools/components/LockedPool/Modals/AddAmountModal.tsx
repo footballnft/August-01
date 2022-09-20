@@ -119,7 +119,7 @@ const AddAmountModal: React.FC<React.PropsWithChildren<AddAmountModalProps>> = (
         style={{ maxWidth: '420px' }}
         title={t('Add CAKE')}
         onDismiss={onDismiss}
-        headerBackground={theme.colors.gradientCardHeader}
+        headerBackground={theme.colors.gradients.cardHeader}
       >
         <Box mb="16px">
           <BalanceField

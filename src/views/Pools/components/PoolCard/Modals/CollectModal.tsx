@@ -58,7 +58,7 @@ const CollectModal: React.FC<React.PropsWithChildren<CollectModalProps>> = ({
     <Modal
       title={`${earningToken.symbol} ${t('Harvest')}`}
       onDismiss={onDismiss}
-      headerBackground={theme.colors.gradientCardHeader}
+      headerBackground={theme.colors.gradients.cardHeader}
     >
       <Flex justifyContent="space-between" alignItems="center" mb="24px">
         <Text>{t('Harvesting')}:</Text>
