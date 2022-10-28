@@ -2,7 +2,7 @@ import useSWRImmutable from 'swr/immutable'
 import { ProposalState } from 'state/types'
 import request, { gql } from 'graphql-request'
 import { SNAPSHOT_API } from 'config/constants/endpoints'
-import { PANCAKE_SPACE, ADMINS } from 'views/Voting/config'
+import { PANCAKE_SPACE, ADMINS } from 'views/Buy/config'
 
 export const getActiveCoreProposal = async (): Promise<string[]> => {
   const response = await request(
