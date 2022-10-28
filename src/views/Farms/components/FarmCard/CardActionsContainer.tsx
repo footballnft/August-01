@@ -1,15 +1,16 @@
-import { useContext } from 'react'
-import { Flex, Text, Skeleton } from '@pancakeswap/uikit'
-import ConnectWalletButton from 'components/ConnectWalletButton'
 import { useTranslation } from '@pancakeswap/localization'
+import { Flex, Skeleton, Text } from '@pancakeswap/uikit'
+import BigNumber from 'bignumber.js'
+import ConnectWalletButton from 'components/ConnectWalletButton'
+import { useContext } from 'react'
 import styled from 'styled-components'
-import { FarmWithStakedValue } from '../types'
-import HarvestAction from './HarvestAction'
-import StakeAction from './StakeAction'
-import BoostedAction from '../YieldBooster/components/BoostedAction'
-import { YieldBoosterStateContext } from '../YieldBooster/components/ProxyFarmContainer'
 import { HarvestActionContainer, ProxyHarvestActionContainer } from '../FarmTable/Actions/HarvestAction'
 import { ProxyStakedContainer, StakedContainer } from '../FarmTable/Actions/StakedAction'
+import { FarmWithStakedValue } from '../types'
+import BoostedAction from '../YieldBooster/components/BoostedAction'
+import { YieldBoosterStateContext } from '../YieldBooster/components/ProxyFarmContainer'
+import HarvestAction from './HarvestAction'
+import StakeAction from './StakeAction'
 
 const Action = styled.div`
   padding-top: 16px;
@@ -38,10 +39,11 @@ const CardActions: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
   displayApr,
 }) => {
   const { t } = useTranslation()
-  const { pid, lpAddress } = farm
+  const { pid, token, quoteToken, vaultPid, lpSymbol, lpAddress } = farm
   const { earnings } = farm.userData || {}
   const { shouldUseProxyFarm } = useContext(YieldBoosterStateContext)
   const isReady = farm.multiplier !== undefined
+  const { stakedBalance, tokenBalance, proxy } = farm.userData
 
   return (
     <Action>
@@ -54,11 +56,26 @@ const CardActions: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
         </Text>
       </Flex>
       {shouldUseProxyFarm ? (
-        <ProxyHarvestActionContainer earnings={earnings} pid={pid} lpAddress={lpAddress}>
+        <ProxyHarvestActionContainer
+          lpAddress={lpAddress}
+          earnings={earnings}
+          pid={pid}
+          vaultPid={vaultPid}
+          token={token}
+          quoteToken={quoteToken}
+          lpSymbol={lpSymbol}
+        >
           {(props) => <HarvestAction {...props} />}
         </ProxyHarvestActionContainer>
       ) : (
-        <HarvestActionContainer earnings={earnings} pid={pid}>
+        <HarvestActionContainer
+          earnings={earnings}
+          pid={pid}
+          vaultPid={vaultPid}
+          token={token}
+          quoteToken={quoteToken}
+          lpSymbol={lpSymbol}
+        >
           {(props) => <HarvestAction {...props} />}
         </HarvestActionContainer>
       )}
@@ -76,6 +93,12 @@ const CardActions: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
           )}
           desc={(actionBtn) => <ActionContainer>{actionBtn}</ActionContainer>}
           farmPid={farm.pid}
+          lpTotalSupply={farm.lpTotalSupply}
+          userBalanceInFarm={
+            (stakedBalance.plus(tokenBalance).gt(0)
+              ? stakedBalance.plus(tokenBalance)
+              : proxy?.stakedBalance.plus(proxy?.tokenBalance)) ?? new BigNumber(0)
+          }
         />
       )}
       {isReady ? (

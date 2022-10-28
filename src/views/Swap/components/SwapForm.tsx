@@ -1,7 +1,6 @@
 import { SetStateAction, useCallback, useEffect, useState, Dispatch, useMemo } from 'react'
-import styled from 'styled-components'
-import { Currency, CurrencyAmount } from '@pancakeswap/sdk'
-import { Button, Text, ArrowDownIcon, Box, IconButton, ArrowUpDownIcon, Skeleton } from '@pancakeswap/uikit'
+import { Currency, CurrencyAmount, Percent } from '@pancakeswap/sdk'
+import { Button, ArrowDownIcon, Box, Skeleton, Swap as SwapUI, Message, MessageText } from '@pancakeswap/uikit'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/UnsupportedCurrencyFooter'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -12,7 +11,7 @@ import AccessRisk from 'views/Swap/components/AccessRisk'
 
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import { CommonBasesType } from 'components/SearchModal/types'
-import { AutoRow, RowBetween } from 'components/Layout/Row'
+import { AutoRow } from 'components/Layout/Row'
 import { AutoColumn } from 'components/Layout/Column'
 
 import { useCurrency } from 'hooks/Tokens'
@@ -32,32 +31,9 @@ import useWarningImport from '../hooks/useWarningImport'
 import useRefreshBlockNumberID from '../hooks/useRefreshBlockNumber'
 import AddressInputPanel from './AddressInputPanel'
 import AdvancedSwapDetailsDropdown from './AdvancedSwapDetailsDropdown'
-import TradePrice from './TradePrice'
 import { ArrowWrapper, Wrapper } from './styleds'
-
-const Label = styled(Text)`
-  font-size: 12px;
-  font-weight: bold;
-  color: ${({ theme }) => theme.colors.secondary};
-`
-
-const SwitchIconButton = styled(IconButton)`
-  box-shadow: inset 0px -2px 0px rgba(0, 0, 0, 0.1);
-  .icon-up-down {
-    display: none;
-  }
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.primary};
-    .icon-down {
-      display: none;
-      fill: white;
-    }
-    .icon-up-down {
-      display: block;
-      fill: white;
-    }
-  }
-`
+import { useStableFarms } from '../StableSwap/hooks/useStableConfig'
+import { isAddress } from '../../../utils'
 
 interface SwapForm {
   isChartExpanded: boolean
@@ -68,6 +44,7 @@ interface SwapForm {
 export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAccessTokenSupported }) {
   const { t } = useTranslation()
   const { refreshBlockNumber, isLoading } = useRefreshBlockNumberID()
+  const stableFarms = useStableFarms()
   const warningSwapHandler = useWarningImport()
 
   const { account, chainId } = useActiveWeb3React()
@@ -88,6 +65,16 @@ export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAcce
   } = useSwapState()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
+  const hasStableSwapAlternative = useMemo(() => {
+    return stableFarms.some((stableFarm) => {
+      const checkSummedToken0 = isAddress(stableFarm?.token0.address)
+      const checkSummedToken1 = isAddress(stableFarm?.token1.address)
+      return (
+        (checkSummedToken0 === inputCurrencyId || checkSummedToken0 === outputCurrencyId) &&
+        (checkSummedToken1 === outputCurrencyId || checkSummedToken1 === outputCurrencyId)
+      )
+    })
+  }, [stableFarms, inputCurrencyId, outputCurrencyId])
 
   const currencies: { [field in Field]?: Currency } = useMemo(
     () => ({
@@ -162,9 +149,6 @@ export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAcce
   const maxAmountInput: CurrencyAmount<Currency> | undefined = maxAmountSpend(currencyBalances[Field.INPUT])
   const atMaxAmountInput = Boolean(maxAmountInput && parsedAmounts[Field.INPUT]?.equalTo(maxAmountInput))
 
-  // errors
-  const [showInverted, setShowInverted] = useState<boolean>(false)
-
   const handleInputSelect = useCallback(
     (currencyInput) => {
       setApprovalSubmitted(false) // reset 2 step UI for approvals
@@ -194,6 +178,15 @@ export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAcce
     [onCurrencySelection, warningSwapHandler],
   )
 
+  const handlePercentInput = useCallback(
+    (percent) => {
+      if (maxAmountInput) {
+        onUserInput(Field.INPUT, maxAmountInput.multiply(new Percent(percent, 100)).toExact())
+      }
+    },
+    [maxAmountInput, onUserInput],
+  )
+
   const swapIsUnsupported = useIsTransactionUnsupported(currencies?.INPUT, currencies?.OUTPUT)
 
   const hasAmount = Boolean(parsedAmount)
@@ -203,10 +196,6 @@ export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAcce
       refreshBlockNumber()
     }
   }, [hasAmount, refreshBlockNumber])
-
-  const isShowAccessToken = useMemo(() => {
-    return isAccessTokenSupported && !currencies[Field.OUTPUT]?.isNative
-  }, [isAccessTokenSupported, currencies])
 
   return (
     <>
@@ -225,8 +214,10 @@ export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAcce
               label={independentField === Field.OUTPUT && !showWrap && trade ? t('From (estimated)') : t('From')}
               value={formattedAmounts[Field.INPUT]}
               showMaxButton={!atMaxAmountInput}
+              showQuickInputButton
               currency={currencies[Field.INPUT]}
               onUserInput={handleTypeInput}
+              onPercentInput={handlePercentInput}
               onMax={handleMaxInput}
               onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT]}
@@ -237,23 +228,14 @@ export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAcce
 
             <AutoColumn justify="space-between">
               <AutoRow justify={isExpertMode ? 'space-between' : 'center'} style={{ padding: '0 1rem' }}>
-                <SwitchIconButton
-                  variant="light"
-                  scale="sm"
+                <SwapUI.SwitchButton
                   onClick={() => {
                     setApprovalSubmitted(false) // reset 2 step UI for approvals
                     onSwitchTokens()
+                    replaceBrowserHistory('inputCurrency', outputCurrencyId)
+                    replaceBrowserHistory('outputCurrency', inputCurrencyId)
                   }}
-                >
-                  <ArrowDownIcon
-                    className="icon-down"
-                    color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? 'primary' : 'text'}
-                  />
-                  <ArrowUpDownIcon
-                    className="icon-up-down"
-                    color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? 'primary' : 'text'}
-                  />
-                </SwitchIconButton>
+                />
                 {recipient === null && !showWrap && isExpertMode ? (
                   <Button variant="text" id="add-recipient-button" onClick={() => onChangeRecipient('')}>
                     {t('+ Add a send (optional)')}
@@ -274,8 +256,8 @@ export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAcce
               commonBasesType={CommonBasesType.SWAP_LIMITORDER}
             />
 
-            <Box style={{ display: isShowAccessToken ? 'block' : 'none' }}>
-              <AccessRisk currency={currencies[Field.OUTPUT]} />
+            <Box style={{ display: isAccessTokenSupported ? 'block' : 'none' }}>
+              <AccessRisk inputCurrency={currencies[Field.INPUT]} outputCurrency={currencies[Field.OUTPUT]} />
             </Box>
 
             {isExpertMode && recipient !== null && !showWrap ? (
@@ -293,32 +275,30 @@ export default function SwapForm({ setIsChartDisplayed, isChartDisplayed, isAcce
             ) : null}
 
             {showWrap ? null : (
-              <AutoColumn gap="7px" style={{ padding: '0 16px' }}>
-                <RowBetween align="center">
-                  {Boolean(trade) && (
+              <SwapUI.Info
+                price={
+                  Boolean(trade) && (
                     <>
-                      <Label>{t('Price')}</Label>
+                      <SwapUI.InfoLabel>{t('Price')}</SwapUI.InfoLabel>
                       {isLoading ? (
                         <Skeleton width="100%" ml="8px" height="24px" />
                       ) : (
-                        <TradePrice
-                          price={trade?.executionPrice}
-                          showInverted={showInverted}
-                          setShowInverted={setShowInverted}
-                        />
+                        <SwapUI.TradePrice price={trade?.executionPrice} />
                       )}
                     </>
-                  )}
-                </RowBetween>
-                <RowBetween align="center">
-                  <Label>{t('Slippage Tolerance')}</Label>
-                  <Text bold color="primary">
-                    {allowedSlippage / 100}%
-                  </Text>
-                </RowBetween>
-              </AutoColumn>
+                  )
+                }
+                allowedSlippage={allowedSlippage}
+              />
             )}
           </AutoColumn>
+          {hasStableSwapAlternative && (
+            <AutoColumn>
+              <Message variant="warning" my="16px">
+                <MessageText>{t('Trade stablecoins in StableSwap with lower slippage and trading fees!')}</MessageText>
+              </Message>
+            </AutoColumn>
+          )}
           <Box mt="0.25rem">
             <SwapCommitButton
               swapIsUnsupported={swapIsUnsupported}

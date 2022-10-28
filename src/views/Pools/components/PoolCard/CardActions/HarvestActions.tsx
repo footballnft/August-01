@@ -1,10 +1,9 @@
-import { Flex, Text, Button, Heading, useModal, Skeleton } from '@pancakeswap/uikit'
+import { Flex, Text, Button, Heading, useModal, Skeleton, Balance } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
 import { Token } from '@pancakeswap/sdk'
 import { useTranslation } from '@pancakeswap/localization'
-import { getFullDisplayBalance, getBalanceNumber, formatNumber } from 'utils/formatBalance'
-import Balance from 'components/Balance'
-import CollectModal from '../Modals/CollectModal'
+import { getFullDisplayBalance, getBalanceNumber, formatNumber } from '@pancakeswap/utils/formatBalance'
+import CollectModal from '../../Modals/CollectModal'
 
 interface HarvestActionsProps {
   earnings: BigNumber

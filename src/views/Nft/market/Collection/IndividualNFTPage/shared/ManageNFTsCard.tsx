@@ -15,9 +15,10 @@ import {
 import { useWeb3React } from '@pancakeswap/wagmi'
 import { useProfile } from 'state/profile/hooks'
 import { NftLocation, NftToken, Collection } from 'state/nftMarket/types'
-import { formatNumber } from 'utils/formatBalance'
+import { formatNumber } from '@pancakeswap/utils/formatBalance'
 import ConnectWalletButton from 'components/ConnectWalletButton'
 import { useTranslation } from '@pancakeswap/localization'
+import { isAddress } from 'utils'
 import { CollectibleRowContainer, SmallRoundedImage } from './styles'
 import ProfileNftModal from '../../../components/ProfileNftModal'
 import SellModal from '../../../components/BuySellModals/SellModal'
@@ -148,7 +149,7 @@ interface ManageNftsCardProps {
 const getNftFilter = (location: NftLocation) => {
   return (nft: NftToken, collectionAddress: string, tokenId: string | number): boolean => {
     return (
-      nft.collectionAddress.toLowerCase() === collectionAddress.toLowerCase() &&
+      isAddress(nft.collectionAddress) === isAddress(collectionAddress) &&
       (tokenId ? nft.attributes[0].value === tokenId : true) &&
       nft.location === location
     )

@@ -1,6 +1,6 @@
 import { SetStateAction, useCallback, useEffect, useState, Dispatch, useContext } from 'react'
 import styled from 'styled-components'
-import { Currency, CurrencyAmount } from '@pancakeswap/sdk'
+import { Currency, CurrencyAmount, Percent } from '@pancakeswap/sdk'
 import {
   Text,
   ArrowDownIcon,
@@ -11,10 +11,10 @@ import {
   Flex,
   Message,
   MessageText,
+  Swap as SwapUI,
 } from '@pancakeswap/uikit'
 import InfoTooltip from '@pancakeswap/uikit/src/components/Timeline/InfoTooltip'
 
-import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useTranslation } from '@pancakeswap/localization'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { useSwapActionHandlers } from 'state/swap/useSwapActionHandlers'
@@ -33,8 +33,8 @@ import { useExpertModeManager, useUserSlippageTolerance } from 'state/user/hooks
 
 import replaceBrowserHistory from '@pancakeswap/utils/replaceBrowserHistory'
 import { currencyId } from 'utils/currencyId'
-import TradePrice from 'views/Swap/components/TradePrice'
 
+import { useWeb3React } from '@pancakeswap/wagmi'
 import CurrencyInputHeader from '../../components/CurrencyInputHeader'
 import useRefreshBlockNumberID from '../../hooks/useRefreshBlockNumber'
 import { Wrapper } from '../../components/styleds'
@@ -76,7 +76,7 @@ interface StableSwapForm {
 export default function StableSwapForm({ setIsChartDisplayed, isChartDisplayed }) {
   const { t } = useTranslation()
   const { refreshBlockNumber, isLoading } = useRefreshBlockNumberID()
-  const { account } = useActiveWeb3React()
+  const { account } = useWeb3React()
 
   // for expert mode
   const [isExpertMode] = useExpertModeManager()
@@ -155,9 +155,6 @@ export default function StableSwapForm({ setIsChartDisplayed, isChartDisplayed }
   const maxAmountInput: CurrencyAmount<Currency> | undefined = maxAmountSpend(currencyBalances[Field.INPUT])
   const atMaxAmountInput = Boolean(maxAmountInput && parsedAmounts[Field.INPUT]?.equalTo(maxAmountInput))
 
-  // errors
-  const [showInverted, setShowInverted] = useState<boolean>(false)
-
   const handleInputSelect = useCallback(
     (currencyInput) => {
       setApprovalSubmitted(false) // reset 2 step UI for approvals
@@ -184,6 +181,15 @@ export default function StableSwapForm({ setIsChartDisplayed, isChartDisplayed }
     [onCurrencySelection],
   )
 
+  const handlePercentInput = useCallback(
+    (percent) => {
+      if (maxAmountInput) {
+        onUserInput(Field.INPUT, maxAmountInput.multiply(new Percent(percent, 100)).toExact())
+      }
+    },
+    [maxAmountInput, onUserInput],
+  )
+
   const hasAmount = Boolean(parsedAmount)
 
   const onRefreshPrice = useCallback(() => {
@@ -200,7 +206,7 @@ export default function StableSwapForm({ setIsChartDisplayed, isChartDisplayed }
             {t('StableSwap')}
             <InfoTooltip
               ml="4px"
-              text="StableSwap provides better rates and lower fees for pairs with highly correlated prices"
+              text={t('StableSwap provides better rates and lower fees for pairs with highly correlated prices')}
             />
           </Flex>
         }
@@ -217,8 +223,10 @@ export default function StableSwapForm({ setIsChartDisplayed, isChartDisplayed }
             label={independentField === Field.OUTPUT && trade ? t('From (estimated)') : t('From')}
             value={formattedAmounts[Field.INPUT]}
             showMaxButton={!atMaxAmountInput}
+            showQuickInputButton
             currency={currencies[Field.INPUT]}
             onUserInput={handleTypeInput}
+            onPercentInput={handlePercentInput}
             onMax={handleMaxInput}
             onCurrencySelect={handleInputSelect}
             otherCurrency={currencies[Field.OUTPUT]}
@@ -266,15 +274,11 @@ export default function StableSwapForm({ setIsChartDisplayed, isChartDisplayed }
             <RowBetween align="center">
               {Boolean(trade) && (
                 <>
-                  <Label>{t('Price')}</Label>
+                  <SwapUI.InfoLabel>{t('Price')}</SwapUI.InfoLabel>
                   {isLoading ? (
                     <Skeleton width="100%" ml="8px" height="24px" />
                   ) : (
-                    <TradePrice
-                      price={trade?.executionPrice}
-                      showInverted={showInverted}
-                      setShowInverted={setShowInverted}
-                    />
+                    <SwapUI.TradePrice price={trade?.executionPrice} />
                   )}
                 </>
               )}
@@ -289,7 +293,7 @@ export default function StableSwapForm({ setIsChartDisplayed, isChartDisplayed }
           {typedValue ? null : (
             <AutoColumn>
               <Message variant="warning" mb="16px">
-                <MessageText>Trade stablecoins in StableSwap with lower slippage and trading fees!</MessageText>
+                <MessageText>{t('Trade stablecoins in StableSwap with lower slippage and trading fees!')}</MessageText>
               </Message>
             </AutoColumn>
           )}

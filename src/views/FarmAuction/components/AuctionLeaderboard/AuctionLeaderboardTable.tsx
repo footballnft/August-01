@@ -16,7 +16,7 @@ import {
   useMatchBreakpoints,
 } from '@pancakeswap/uikit'
 import { getBlockExploreLink } from 'utils'
-import { getBalanceNumber } from 'utils/formatBalance'
+import { getBalanceNumber } from '@pancakeswap/utils/formatBalance'
 import { useTranslation } from '@pancakeswap/localization'
 import { usePriceCakeBusd } from 'state/farms/hooks'
 import { Bidder } from 'config/constants/types'
@@ -35,7 +35,7 @@ const GridCell = styled(Flex)<{ isTopPosition: boolean }>`
   align-items: center;
   border-bottom: 1px solid ${({ theme }) => theme.colors.cardBorder};
 
-  ${({ theme, isTopPosition }) => isTopPosition && `background-color: ${theme.colors.warning}2D;`}
+  ${({ theme, isTopPosition }) => isTopPosition && `background-color: ${theme.colors.warning2D};`}
 `
 
 interface LeaderboardRowProps {

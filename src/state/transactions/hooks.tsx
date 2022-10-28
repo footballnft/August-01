@@ -9,8 +9,15 @@ import keyBy from 'lodash/keyBy'
 import orderBy from 'lodash/orderBy'
 import omitBy from 'lodash/omitBy'
 import isEmpty from 'lodash/isEmpty'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import { TransactionDetails } from './reducer'
-import { addTransaction, TransactionType } from './actions'
+import {
+  addTransaction,
+  TransactionType,
+  NonBscFarmTransactionType,
+  FarmTransactionStatus,
+  NonBscFarmStepType,
+} from './actions'
 import { AppState, useAppDispatch } from '../index'
 
 // helper that can take a ethers library transaction response and add it to the list of transactions
@@ -23,6 +30,7 @@ export function useTransactionAdder(): (
     claim?: { recipient: string }
     type?: TransactionType
     order?: Order
+    nonBscFarm?: NonBscFarmTransactionType
   },
 ) => void {
   const { chainId, account } = useActiveWeb3React()
@@ -38,6 +46,7 @@ export function useTransactionAdder(): (
         claim,
         type,
         order,
+        nonBscFarm,
       }: {
         summary?: string
         translatableSummary?: { text: string; data?: Record<string, string | number> }
@@ -45,6 +54,7 @@ export function useTransactionAdder(): (
         approval?: { tokenAddress: string; spender: string }
         type?: TransactionType
         order?: Order
+        nonBscFarm?: NonBscFarmTransactionType
       } = {},
     ) => {
       if (!account) return
@@ -55,7 +65,18 @@ export function useTransactionAdder(): (
         throw Error('No transaction hash found.')
       }
       dispatch(
-        addTransaction({ hash, from: account, chainId, approval, summary, translatableSummary, claim, type, order }),
+        addTransaction({
+          hash,
+          from: account,
+          chainId,
+          approval,
+          summary,
+          translatableSummary,
+          claim,
+          type,
+          order,
+          nonBscFarm,
+        }),
       )
     },
     [dispatch, chainId, account],
@@ -64,7 +85,7 @@ export function useTransactionAdder(): (
 
 // returns all the transactions
 export function useAllTransactions(): { [chainId: number]: { [txHash: string]: TransactionDetails } } {
-  const { account } = useActiveWeb3React()
+  const { account } = useWeb3React()
 
   const state: {
     [chainId: number]: {
@@ -99,8 +120,14 @@ export function useAllSortedRecentTransactions(): { [chainId: number]: { [txHash
 }
 
 // returns all the transactions for the current chain
-export function useAllChainTransactions(): { [txHash: string]: TransactionDetails } {
-  const { account, chainId } = useActiveWeb3React()
+export function useAllActiveChainTransactions(): { [txHash: string]: TransactionDetails } {
+  const { chainId } = useActiveWeb3React()
+
+  return useAllChainTransactions(chainId)
+}
+
+export function useAllChainTransactions(chainId: number): { [txHash: string]: TransactionDetails } {
+  const { account } = useWeb3React()
 
   const state = useSelector<AppState, AppState['transactions']>((s) => s.transactions)
 
@@ -116,7 +143,7 @@ export function useAllChainTransactions(): { [txHash: string]: TransactionDetail
 }
 
 export function useIsTransactionPending(transactionHash?: string): boolean {
-  const transactions = useAllChainTransactions()
+  const transactions = useAllActiveChainTransactions()
 
   if (!transactionHash || !transactions[transactionHash]) return false
 
@@ -133,7 +160,7 @@ export function isTransactionRecent(tx: TransactionDetails): boolean {
 
 // returns whether a token has a pending approval transaction
 export function useHasPendingApproval(tokenAddress: string | undefined, spender: string | undefined): boolean {
-  const allTransactions = useAllChainTransactions()
+  const allTransactions = useAllActiveChainTransactions()
   return useMemo(
     () =>
       typeof tokenAddress === 'string' &&
@@ -158,18 +185,41 @@ function newTransactionsFirst(a: TransactionDetails, b: TransactionDetails) {
 }
 
 // calculate pending transactions
-export function usePendingTransactions(): { hasPendingTransactions: boolean; pendingNumber: number } {
-  const allTransactions = useAllChainTransactions()
+interface NonBscPendingData {
+  txid: string
+  lpAddress: string
+  type: NonBscFarmStepType
+}
+export function usePendingTransactions(): {
+  hasPendingTransactions: boolean
+  pendingNumber: number
+  nonBscFarmPendingList: NonBscPendingData[]
+} {
+  const allTransactions = useAllTransactions()
   const sortedRecentTransactions = useMemo(() => {
-    const txs = Object.values(allTransactions)
+    const txs = Object.values(allTransactions).flatMap((trxObjects) => Object.values(trxObjects))
     return txs.filter(isTransactionRecent).sort(newTransactionsFirst)
   }, [allTransactions])
 
-  const pending = sortedRecentTransactions.filter((tx) => !tx.receipt).map((tx) => tx.hash)
+  const pending = sortedRecentTransactions
+    .filter((tx) => !tx.receipt || tx?.nonBscFarm?.status === FarmTransactionStatus.PENDING)
+    .map((tx) => tx.hash)
   const hasPendingTransactions = !!pending.length
+
+  const nonBscFarmPendingList = sortedRecentTransactions
+    .filter((tx) => pending.includes(tx.hash) && !!tx.nonBscFarm)
+    .map((tx) => ({ txid: tx.hash, lpAddress: tx.nonBscFarm.lpAddress, type: tx.nonBscFarm.type }))
 
   return {
     hasPendingTransactions,
+    nonBscFarmPendingList,
     pendingNumber: pending.length,
   }
+}
+
+export function useNonBscFarmPendingTransaction(lpAddress: string): NonBscPendingData[] {
+  const { nonBscFarmPendingList } = usePendingTransactions()
+  return useMemo(() => {
+    return nonBscFarmPendingList.filter((tx) => tx.lpAddress.toLocaleLowerCase() === lpAddress.toLocaleLowerCase())
+  }, [lpAddress, nonBscFarmPendingList])
 }

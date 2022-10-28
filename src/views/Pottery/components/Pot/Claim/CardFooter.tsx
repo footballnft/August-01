@@ -1,19 +1,18 @@
 import { useMemo } from 'react'
 import styled from 'styled-components'
-import { Flex, Box, Text } from '@pancakeswap/uikit'
+import { Flex, Box, Text, Balance } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
 import { useTranslation } from '@pancakeswap/localization'
 import { useVaultApy } from 'hooks/useVaultApy'
 import { weeksToSeconds } from 'views/Pools/components/utils/formatSecondsToWeeks'
-import { getBalanceNumber } from 'utils/formatBalance'
-import { distanceToNowStrict } from 'utils/timeHelper'
+import { getBalanceNumber } from '@pancakeswap/utils/formatBalance'
+import { distanceToNowStrictWithUnit } from 'utils/timeHelper'
 import { DeserializedPublicData, DeserializedPotteryUserData, PotteryDepositStatus } from 'state/types'
-import Balance from 'components/Balance'
 
 const Container = styled(Flex)`
   flex-direction: column;
   padding: 16px 24px;
-  background: ${({ theme }) => theme.colors.gradients.cardHeader};
+  background: ${({ theme }) => theme.colors.gradientCardHeader};
 `
 
 interface CardFooterProps {
@@ -87,7 +86,7 @@ const CardFooter: React.FC<React.PropsWithChildren<CardFooterProps>> = ({ accoun
             <Box>
               {account ? (
                 <>
-                  <Text bold>{distanceToNowStrict(daysRemaining)}</Text>
+                  <Text bold>{distanceToNowStrictWithUnit(daysRemaining, 'day')}</Text>
                 </>
               ) : (
                 <Text bold as="span">

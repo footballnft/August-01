@@ -23,6 +23,7 @@ export default function Pool() {
 
   // fetch the user's balances of all tracked V2 LP tokens
   const trackedTokenPairs = useTrackedTokenPairs()
+
   const tokenPairsWithLiquidityTokens = useMemo(
     () => trackedTokenPairs.map((tokens) => ({ liquidityToken: toV2LiquidityToken(tokens), tokens })),
     [trackedTokenPairs],
@@ -89,7 +90,7 @@ export default function Pool() {
         ...positionCards,
         ...stablePairs?.map((stablePair, index) => (
           <StableFullPositionCard
-            key={stablePair.liquidityToken.address}
+            key={`stable-${stablePair.liquidityToken.address}`}
             pair={stablePair}
             mb={index < stablePairs.length - 1 ? '16px' : 0}
           />

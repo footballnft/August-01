@@ -9,11 +9,11 @@ import {
   useModal,
   Skeleton,
   useMatchBreakpoints,
+  NextLinkFromReactRouter,
 } from '@pancakeswap/uikit'
-import { NextLinkFromReactRouter } from 'components/NextLink'
 import { Activity, NftToken } from 'state/nftMarket/types'
 import { Price, Currency } from '@pancakeswap/sdk'
-import { getBlockExploreLink } from 'utils'
+import { getBlockExploreLink, isAddress } from 'utils'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import ProfileCell from 'views/Nft/market/components/ProfileCell'
 import MobileModal from './MobileModal'
@@ -57,7 +57,7 @@ const ActivityRow: React.FC<React.PropsWithChildren<ActivityRowProps>> = ({
       isUserActivity={isUserActivity}
     />,
   )
-  const isPBCollection = nft ? nft.collectionAddress.toLowerCase() === pancakeBunniesAddress.toLowerCase() : false
+  const isPBCollection = nft ? isAddress(nft.collectionAddress) === pancakeBunniesAddress : false
   const tokenId =
     nft && isPBCollection
       ? nft.attributes.find((attribute) => attribute.traitType === 'bunnyId')?.value

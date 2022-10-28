@@ -4,7 +4,7 @@ import { Flex, LinkExternal, Text, Box, HelpIcon, useTooltip, RocketIcon, Link }
 import { useTranslation } from '@pancakeswap/localization'
 import styled from 'styled-components'
 import { getBlockExploreLink } from 'utils'
-import { formatNumber } from 'utils/formatBalance'
+import { formatNumber } from '@pancakeswap/utils/formatBalance'
 import useCurrentBlockTimestamp from 'hooks/useCurrentBlockTimestamp'
 import { ModalInner, VotingBoxBorder, VotingBoxCardInner } from './styles'
 
@@ -41,7 +41,7 @@ const FixedTermCardInner = styled(Box)<{ expired?: boolean }>`
     height: 100%;
     pointer-events: none;
     border-radius: ${({ theme }) => theme.radii.default};
-    background: ${({ theme, expired }) => (expired ? 'rgba(255, 178, 55, 0.098)' : theme.colors.gradients.bubblegum)};
+    background: ${({ theme, expired }) => (expired ? 'rgba(255, 178, 55, 0.098)' : theme.colors.gradientBubblegum)};
   }
 `
 

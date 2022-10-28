@@ -1,20 +1,19 @@
 import { Currency, Pair } from '@pancakeswap/sdk'
-import { Button, ChevronDownIcon, Text, useModal, Flex, Box } from '@pancakeswap/uikit'
+import { Button, ChevronDownIcon, Text, useModal, Flex, Box, NumericalInput, CopyButton } from '@pancakeswap/uikit'
 import styled, { css } from 'styled-components'
 import { isAddress } from 'utils'
 import { useTranslation } from '@pancakeswap/localization'
-import { WrappedTokenInfo } from '@pancakeswap/tokens'
-import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import { StablePair } from 'views/AddLiquidity/AddStableLiquidity/hooks/useStableLPDerivedMintInfo'
+import { WrappedTokenInfo } from '@pancakeswap/token-lists'
 
 import { useBUSDCurrencyAmount } from 'hooks/useBUSDPrice'
-import { formatNumber } from 'utils/formatBalance'
+import { formatNumber } from '@pancakeswap/utils/formatBalance'
+import { StablePair } from 'views/AddLiquidity/AddStableLiquidity/hooks/useStableLPDerivedMintInfo'
+
+import { useWeb3React } from '@pancakeswap/wagmi'
 import { useCurrencyBalance } from '../../state/wallet/hooks'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { CurrencyLogo, DoubleCurrencyLogo } from '../Logo'
 
-import { Input as NumericalInput } from './NumericalInput'
-import { CopyButton } from '../CopyButton'
 import AddToWalletButton from '../AddToWallet/AddToWalletButton'
 
 const InputRow = styled.div<{ selected: boolean }>`
@@ -26,7 +25,6 @@ const InputRow = styled.div<{ selected: boolean }>`
 `
 const CurrencySelectButton = styled(Button).attrs({ variant: 'text', scale: 'sm' })<{ zapStyle?: ZapStyle }>`
   padding: 0 0.5rem;
-
   ${({ zapStyle, theme }) =>
     zapStyle &&
     css`
@@ -77,7 +75,9 @@ interface CurrencyInputPanelProps {
   value: string
   onUserInput: (value: string) => void
   onInputBlur?: () => void
+  onPercentInput?: (percent: number) => void
   onMax?: () => void
+  showQuickInputButton?: boolean
   showMaxButton: boolean
   label?: string
   onCurrencySelect?: (currency: Currency) => void
@@ -99,7 +99,9 @@ export default function CurrencyInputPanel({
   value,
   onUserInput,
   onInputBlur,
+  onPercentInput,
   onMax,
+  showQuickInputButton = false,
   showMaxButton,
   label,
   onCurrencySelect,
@@ -117,7 +119,7 @@ export default function CurrencyInputPanel({
   error,
   showBUSD,
 }: CurrencyInputPanelProps) {
-  const { account } = useActiveWeb3React()
+  const { account } = useWeb3React()
   const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
   const { t } = useTranslation()
 
@@ -234,10 +236,39 @@ export default function CurrencyInputPanel({
                 ~{formatNumber(amountInDollar)} USD
               </Text>
             )}
-            {account && currency && !disabled && showMaxButton && label !== 'To' && (
-              <Button onClick={onMax} scale="xs" variant="secondary" style={{ textTransform: 'uppercase' }}>
-                {t('Max')}
-              </Button>
+            {account && currency && selectedCurrencyBalance?.greaterThan(0) && !disabled && label !== 'To' && (
+              <Flex alignItems="right" justifyContent="right">
+                {showQuickInputButton &&
+                  onPercentInput &&
+                  [25, 50, 75].map((percent) => (
+                    <Button
+                      key={`btn_quickCurrency${percent}`}
+                      onClick={() => {
+                        onPercentInput(percent)
+                      }}
+                      scale="xs"
+                      mr="5px"
+                      variant="secondary"
+                      style={{ textTransform: 'uppercase' }}
+                    >
+                      {percent}%
+                    </Button>
+                  ))}
+                {showMaxButton && (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      onMax?.()
+                    }}
+                    scale="xs"
+                    variant="secondary"
+                    style={{ textTransform: 'uppercase' }}
+                  >
+                    {t('Max')}
+                  </Button>
+                )}
+              </Flex>
             )}
           </InputRow>
         </Container>

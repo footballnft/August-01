@@ -1,9 +1,8 @@
 import styled from 'styled-components'
-import { Button, Heading, Text, Flex, Link, Breadcrumbs } from '@pancakeswap/uikit'
+import { Button, Heading, Text, Flex, Link, Breadcrumbs, PageHeader } from '@pancakeswap/uikit'
 import { useWeb3React } from '@pancakeswap/wagmi'
 import { useTranslation } from '@pancakeswap/localization'
 import { PageMeta } from 'components/Layout/Page'
-import PageHeader from 'components/PageHeader'
 import PageSection from 'components/PageSection'
 import useTheme from 'hooks/useTheme'
 import NextLink from 'next/link'
@@ -98,7 +97,7 @@ const FarmAuction = () => {
               {t('Community Farm Auction')}
             </Heading>
             <Text color="textSubtle" mb="24px">
-              {t('Each week, qualifying projects can bid CAKE for the right to host a 7-day Farm on PancakeSwap.')}
+              {t('Each week, qualifying projects can bid CAKE for the right to host a 10-day Farm on PancakeSwap.')}
             </Text>
             <Text color="textSubtle">{t('This page is for projects to bid for farms.')}</Text>
             <Text color="textSubtle" mb="24px">

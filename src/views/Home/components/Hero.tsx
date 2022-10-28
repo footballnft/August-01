@@ -1,7 +1,6 @@
-import { Button, Flex, Heading } from '@pancakeswap/uikit'
+import { Button, Flex, Heading, NextLinkFromReactRouter } from '@pancakeswap/uikit'
 import { useWeb3React } from '@pancakeswap/wagmi'
 import ConnectWalletButton from 'components/ConnectWalletButton'
-import { NextLinkFromReactRouter } from 'components/NextLink'
 import { useTranslation } from '@pancakeswap/localization'
 import styled, { keyframes } from 'styled-components'
 import CompositeImage, { CompositeImageProps } from './CompositeImage'

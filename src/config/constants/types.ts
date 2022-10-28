@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { Token, ChainId } from '@pancakeswap/sdk'
-import { SerializedWrappedToken } from '@pancakeswap/tokens'
+import { SerializedWrappedToken } from '@pancakeswap/token-lists'
 import type { SerializedFarmConfig, FarmConfigBaseProps } from '@pancakeswap/farms'
 
 // a list of tokens by chain
@@ -34,7 +34,7 @@ export type IfoStatus = 'idle' | 'coming_soon' | 'live' | 'finished'
 interface IfoPoolInfo {
   saleAmount: string
   raiseAmount: string
-  cakeToBurn: string
+  cakeToBurn?: string
   distributionRatio: number // Range [0-1]
 }
 
@@ -54,6 +54,7 @@ export interface Ifo {
   telegramUrl?: string
   version: number
   vestingTitle?: string
+  cIFO?: boolean
   [PoolIds.poolBasic]?: IfoPoolInfo
   [PoolIds.poolUnlimited]: IfoPoolInfo
 }

@@ -1,9 +1,7 @@
 import styled from 'styled-components'
-import { Box, Button, Flex, Heading, LinkExternal } from '@pancakeswap/uikit'
+import { Box, Button, Flex, Heading, LinkExternal, PageHeader, NextLinkFromReactRouter } from '@pancakeswap/uikit'
 import { useWeb3React } from '@pancakeswap/wagmi'
-import { NextLinkFromReactRouter } from 'components/NextLink'
 import { useTranslation } from '@pancakeswap/localization'
-import PageHeader from 'components/PageHeader'
 import SectionsWithFoldableText from 'components/FoldableSection/SectionsWithFoldableText'
 import PageSection from 'components/PageSection'
 import { PageMeta } from 'components/Layout/Page'
@@ -18,7 +16,7 @@ import Newest from './Newest'
 import config from './config'
 
 const Gradient = styled(Box)`
-  background: ${({ theme }) => theme.colors.gradients.cardHeader};
+  background: ${({ theme }) => theme.colors.gradientCardHeader};
 `
 
 const StyledPageHeader = styled(PageHeader)`

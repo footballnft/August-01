@@ -4,7 +4,7 @@ import { TokenImage } from 'components/TokenImage'
 import { LightGreyCard } from 'components/Card'
 import { useTranslation } from '@pancakeswap/localization'
 import { Ifo } from 'config/constants/types'
-import { getFullDisplayBalance } from 'utils/formatBalance'
+import { getFullDisplayBalance } from '@pancakeswap/utils/formatBalance'
 import BigNumber from 'bignumber.js'
 
 interface TotalAvailableClaimProps {
@@ -29,7 +29,7 @@ const TotalAvailableClaim: React.FC<React.PropsWithChildren<TotalAvailableClaimP
       <Flex>
         <TokenImage mr="16px" width={32} height={32} token={token} style={{ alignSelf: 'flex-start' }} />
         <Box>
-          <Text bold color="secondary" fontSize="12px">
+          <Text bold color="secondary" fontSize="12px" textTransform="uppercase">
             {t('%symbol% available to claim', { symbol: token.symbol })}
           </Text>
           <Text as="span" bold fontSize="20px">

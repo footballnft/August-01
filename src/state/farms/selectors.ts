@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js'
 import addSeconds from 'date-fns/addSeconds'
-import { BIG_ZERO } from 'utils/bigNumber'
-import { getBalanceAmount } from 'utils/formatBalance'
+import { BIG_ZERO } from '@pancakeswap/utils/bigNumber'
+import { getBalanceAmount } from '@pancakeswap/utils/formatBalance'
 import isUndefinedOrNull from '@pancakeswap/utils/isUndefinedOrNull'
-import { deserializeToken } from '@pancakeswap/tokens'
+import { deserializeToken } from '@pancakeswap/token-lists'
 import { createSelector } from '@reduxjs/toolkit'
 import _isEmpty from 'lodash/isEmpty'
 import { State, SerializedFarm, DeserializedFarm, DeserializedFarmUserData } from '../types'
@@ -29,6 +29,7 @@ const deserializeFarm = (farm: SerializedFarm): DeserializedFarm => {
     lpAddress,
     lpSymbol,
     pid,
+    vaultPid,
     dual,
     multiplier,
     isCommunity,
@@ -36,6 +37,7 @@ const deserializeFarm = (farm: SerializedFarm): DeserializedFarm => {
     quoteTokenPriceBusd,
     tokenPriceBusd,
     boosted,
+    infoStableSwapAddress,
   } = farm
 
   const auctionHostingStartDate = !isUndefinedOrNull(auctionHostingStartSeconds)
@@ -58,6 +60,7 @@ const deserializeFarm = (farm: SerializedFarm): DeserializedFarm => {
     lpAddress,
     lpSymbol,
     pid,
+    vaultPid,
     dual,
     multiplier,
     isCommunity: isFarmCommunity,
@@ -71,9 +74,11 @@ const deserializeFarm = (farm: SerializedFarm): DeserializedFarm => {
     quoteTokenAmountTotal: farm.quoteTokenAmountTotal ? new BigNumber(farm.quoteTokenAmountTotal) : BIG_ZERO,
     lpTotalInQuoteToken: farm.lpTotalInQuoteToken ? new BigNumber(farm.lpTotalInQuoteToken) : BIG_ZERO,
     lpTotalSupply: farm.lpTotalSupply ? new BigNumber(farm.lpTotalSupply) : BIG_ZERO,
+    lpTokenPrice: farm.lpTokenPrice ? new BigNumber(farm.lpTokenPrice) : BIG_ZERO,
     tokenPriceVsQuote: farm.tokenPriceVsQuote ? new BigNumber(farm.tokenPriceVsQuote) : BIG_ZERO,
     poolWeight: farm.poolWeight ? new BigNumber(farm.poolWeight) : BIG_ZERO,
     boosted,
+    isStable: Boolean(infoStableSwapAddress),
   }
 }
 

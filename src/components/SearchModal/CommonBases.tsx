@@ -1,12 +1,11 @@
 import { ChainId, Currency, Token } from '@pancakeswap/sdk'
-import { Text } from '@pancakeswap/uikit'
+import { Text, QuestionHelper } from '@pancakeswap/uikit'
 import styled from 'styled-components'
 import useNativeCurrency from 'hooks/useNativeCurrency'
 import { useTranslation } from '@pancakeswap/localization'
 
 import { SUGGESTED_BASES } from 'config/constants/exchange'
 import { AutoColumn } from '../Layout/Column'
-import QuestionHelper from '../QuestionHelper'
 import { AutoRow } from '../Layout/Row'
 import { CurrencyLogo } from '../Logo'
 import { CommonBasesType } from './types'
@@ -84,8 +83,8 @@ export default function CommonBases({
         {(chainId ? SUGGESTED_BASES[chainId] || [] : []).map((token: Token) => {
           const selected = selectedCurrency?.equals(token)
           return (
-            <ButtonWrapper>
-              <BaseWrapper onClick={() => !selected && onSelect(token)} disable={selected} key={token.address}>
+            <ButtonWrapper key={`buttonBase#${token.address}`}>
+              <BaseWrapper onClick={() => !selected && onSelect(token)} disable={selected}>
                 <CurrencyLogo currency={token} style={{ marginRight: 8, borderRadius: '50%' }} />
                 <Text>{token.symbol}</Text>
               </BaseWrapper>

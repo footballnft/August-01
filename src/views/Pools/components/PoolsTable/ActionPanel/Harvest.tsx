@@ -1,15 +1,14 @@
-import { Button, Text, useModal, Flex, Skeleton, Heading } from '@pancakeswap/uikit'
+import { Button, Text, useModal, Flex, Skeleton, Heading, Balance } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
 import { useWeb3React } from '@pancakeswap/wagmi'
 import { PoolCategory } from 'config/constants/types'
-import { formatNumber, getBalanceNumber, getFullDisplayBalance } from 'utils/formatBalance'
+import { formatNumber, getBalanceNumber, getFullDisplayBalance } from '@pancakeswap/utils/formatBalance'
 import { useTranslation } from '@pancakeswap/localization'
-import Balance from 'components/Balance'
-import { BIG_ZERO } from 'utils/bigNumber'
+import { BIG_ZERO } from '@pancakeswap/utils/bigNumber'
 import { DeserializedPool } from 'state/types'
 
 import { ActionContainer, ActionTitles, ActionContent } from './styles'
-import CollectModal from '../../PoolCard/Modals/CollectModal'
+import CollectModal from '../../Modals/CollectModal'
 
 const HarvestAction: React.FunctionComponent<React.PropsWithChildren<DeserializedPool>> = ({
   sousId,

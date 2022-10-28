@@ -21,7 +21,7 @@ import ConnectWalletButton from 'components/ConnectWalletButton'
 import { ToastDescriptionWithTx } from 'components/Toast'
 import { FetchStatus } from 'config/constants/types'
 import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
-import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
+import { useCallWithMarketGasPrice } from 'hooks/useCallWithMarketGasPrice'
 import { useCake, useLotteryV2Contract } from 'hooks/useContract'
 import useTheme from 'hooks/useTheme'
 import useTokenBalance from 'hooks/useTokenBalance'
@@ -31,8 +31,8 @@ import { usePriceCakeBusd } from 'state/farms/hooks'
 import { fetchUserTicketsAndLotteries } from 'state/lottery'
 import { useLottery } from 'state/lottery/hooks'
 import styled from 'styled-components'
-import { BIG_ZERO } from 'utils/bigNumber'
-import { getFullDisplayBalance } from 'utils/formatBalance'
+import { BIG_ZERO } from '@pancakeswap/utils/bigNumber'
+import { getFullDisplayBalance } from '@pancakeswap/utils/formatBalance'
 import { requiresApproval } from 'utils/requiresApproval'
 import EditNumbersModal from './EditNumbersModal'
 import NumTicketsToBuyButton from './NumTicketsToBuyButton'
@@ -73,7 +73,7 @@ const BuyTicketsModal: React.FC<React.PropsWithChildren<BuyTicketsModalProps>> =
       userTickets: { tickets: userCurrentTickets },
     },
   } = useLottery()
-  const { callWithGasPrice } = useCallWithGasPrice()
+  const { callWithMarketGasPrice } = useCallWithMarketGasPrice()
   const [ticketsToBuy, setTicketsToBuy] = useState('')
   const [discountValue, setDiscountValue] = useState('')
   const [totalCost, setTotalCost] = useState('')
@@ -247,7 +247,7 @@ const BuyTicketsModal: React.FC<React.PropsWithChildren<BuyTicketsModalProps>> =
         return requiresApproval(cakeContractReader, account, lotteryContract.address)
       },
       onApprove: () => {
-        return callWithGasPrice(cakeContractApprover, 'approve', [lotteryContract.address, MaxUint256])
+        return callWithMarketGasPrice(cakeContractApprover, 'approve', [lotteryContract.address, MaxUint256])
       },
       onApproveSuccess: async ({ receipt }) => {
         toastSuccess(
@@ -257,7 +257,7 @@ const BuyTicketsModal: React.FC<React.PropsWithChildren<BuyTicketsModalProps>> =
       },
       onConfirm: () => {
         const ticketsForPurchase = getTicketsForPurchase()
-        return callWithGasPrice(lotteryContract, 'buyTickets', [currentLotteryId, ticketsForPurchase])
+        return callWithMarketGasPrice(lotteryContract, 'buyTickets', [currentLotteryId, ticketsForPurchase])
       },
       onSuccess: async ({ receipt }) => {
         onDismiss?.()
@@ -305,7 +305,7 @@ const BuyTicketsModal: React.FC<React.PropsWithChildren<BuyTicketsModalProps>> =
   }
 
   return (
-    <StyledModal title={t('Buy Tickets')} onDismiss={onDismiss} headerBackground={theme.colors.gradients.cardHeader}>
+    <StyledModal title={t('Buy Tickets')} onDismiss={onDismiss} headerBackground={theme.colors.gradientCardHeader}>
       {tooltipVisible && tooltip}
       <Flex alignItems="center" justifyContent="space-between" mb="8px">
         <Text color="textSubtle">{t('Buy')}:</Text>

@@ -5,7 +5,7 @@ import { ContextApi } from '@pancakeswap/localization'
 import { Button, useModal, useToast } from '@pancakeswap/uikit'
 import { ToastDescriptionWithTx } from 'components/Toast'
 import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
-import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
+import { useCallWithMarketGasPrice } from 'hooks/useCallWithMarketGasPrice'
 import { useCake, useNftSaleContract } from 'hooks/useContract'
 import { useContext, useEffect, useState } from 'react'
 import { DefaultTheme } from 'styled-components'
@@ -53,7 +53,7 @@ const BuyTicketsButtons: React.FC<React.PropsWithChildren<BuyTicketsProps>> = ({
 }) => {
   const [txHashEnablingResult, setTxHashEnablingResult] = useState(null)
   const [txHashBuyingResult, setTxHashBuyingResult] = useState(null)
-  const { callWithGasPrice } = useCallWithGasPrice()
+  const { callWithMarketGasPrice } = useCallWithMarketGasPrice()
   const nftSaleContract = useNftSaleContract()
   const { toastSuccess } = useToast()
   const { reader: cakeContractReader, signer: cakeContractApprover } = useCake()
@@ -73,7 +73,7 @@ const BuyTicketsButtons: React.FC<React.PropsWithChildren<BuyTicketsProps>> = ({
         return requiresApproval(cakeContractReader, account, nftSaleContract.address)
       },
       onApprove: () => {
-        return callWithGasPrice(cakeContractApprover, 'approve', [nftSaleContract.address, MaxUint256])
+        return callWithMarketGasPrice(cakeContractApprover, 'approve', [nftSaleContract.address, MaxUint256])
       },
       onApproveSuccess: async ({ receipt }) => {
         toastSuccess(t('Transaction has succeeded!'), <ToastDescriptionWithTx txHash={receipt.transactionHash} />)
@@ -81,7 +81,7 @@ const BuyTicketsButtons: React.FC<React.PropsWithChildren<BuyTicketsProps>> = ({
       },
       onConfirm: ({ ticketsNumber }) => {
         onPresentConfirmModal()
-        return callWithGasPrice(nftSaleContract, isPreSale ? 'buyTicketsInPreSaleForGen0' : 'buyTickets', [
+        return callWithMarketGasPrice(nftSaleContract, isPreSale ? 'buyTicketsInPreSaleForGen0' : 'buyTickets', [
           ticketsNumber,
         ])
       },
@@ -99,7 +99,7 @@ const BuyTicketsButtons: React.FC<React.PropsWithChildren<BuyTicketsProps>> = ({
     <ConfirmModal
       title={t('Confirm')}
       isLoading={isConfirming}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
       txHash={txHashBuyingResult}
       loadingText={t('Please confirm your transaction in wallet.')}
       loadingButtonLabel={t('Confirming...')}
@@ -113,7 +113,7 @@ const BuyTicketsButtons: React.FC<React.PropsWithChildren<BuyTicketsProps>> = ({
     <ConfirmModal
       title={t('Enable')}
       isLoading={isApproving}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
       txHash={txHashEnablingResult}
       loadingText={t('Please enable CAKE spending in your wallet')}
       loadingButtonLabel={t('Enabling...')}
@@ -127,7 +127,7 @@ const BuyTicketsButtons: React.FC<React.PropsWithChildren<BuyTicketsProps>> = ({
     <BuyTicketsModal
       title={t('Buy Minting Tickets')}
       buyTicketCallBack={handleConfirm}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
       cakeBalance={cakeBalance}
       maxPerAddress={maxPerAddress}
       maxPerTransaction={maxPerTransaction}

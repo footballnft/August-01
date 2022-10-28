@@ -8,6 +8,7 @@ import { useUserBoosterStatus } from 'views/Farms/hooks/useUserBoosterStatus'
 import { useBCakeProxyContractAddress } from 'views/Farms/hooks/useBCakeProxyContractAddress'
 import { useUserLockedCakeStatus } from 'views/Farms/hooks/useUserLockedCakeStatus'
 import { useCallback } from 'react'
+import { useWeb3React } from '@pancakeswap/wagmi'
 
 export enum YieldBoosterState {
   UNCONNECTED,
@@ -18,12 +19,13 @@ export enum YieldBoosterState {
   NO_LP,
   DEACTIVE,
   ACTIVE,
+  ACTIVE_AND_NO_LP,
   MAX,
 }
 
 function useIsPoolActive(pid: number) {
   const farmBoosterContract = useBCakeFarmBoosterContract()
-  const { account } = useActiveWeb3React()
+  const { account } = useWeb3React()
 
   const { data, mutate } = useSWRMulticall(
     farmBoosterAbi,
@@ -69,10 +71,12 @@ export default function useYieldBoosterState(yieldBoosterStateArgs: UseYieldBoos
   } else if (lockedEnd === '0' || new Date() > new Date(parseInt(lockedEnd) * 1000)) {
     // NOTE: duplicate logic in BCakeBoosterCard
     state = YieldBoosterState.LOCKED_END
-  } else if (proxy?.stakedBalance.eq(0)) {
+  } else if (!isActivePool && proxy?.stakedBalance.eq(0)) {
     state = YieldBoosterState.NO_LP
   } else if (!isActivePool && remainingCounts === 0) {
     state = YieldBoosterState.MAX
+  } else if (isActivePool && proxy?.stakedBalance.eq(0)) {
+    state = YieldBoosterState.ACTIVE_AND_NO_LP
   } else if (isActivePool) {
     state = YieldBoosterState.ACTIVE
   } else {

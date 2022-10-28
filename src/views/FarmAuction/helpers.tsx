@@ -4,7 +4,7 @@ import { getBidderInfo } from 'config/constants/farmAuctions'
 import { bscRpcProvider } from 'utils/providers'
 import { AuctionsResponse, FarmAuctionContractStatus, BidsPerAuction } from 'utils/types'
 import { Auction, AuctionStatus, Bidder, BidderAuction } from 'config/constants/types'
-import { ethersToBigNumber } from 'utils/bigNumber'
+import { ethersToBigNumber } from '@pancakeswap/utils/bigNumber'
 import { FarmAuction } from 'config/abi/types'
 import orderBy from 'lodash/orderBy'
 
@@ -80,17 +80,17 @@ const getAuctionStatus = (
 }
 
 const getDateForBlock = async (currentBlock: number, block: number) => {
-  const blocksUntilBlock = block - currentBlock
-  const secondsUntilStart = blocksUntilBlock * BSC_BLOCK_TIME
   // if block already happened we can get timestamp via .getBlock(block)
   if (currentBlock > block) {
     try {
       const { timestamp } = await bscRpcProvider.getBlock(block)
       return toDate(timestamp * 1000)
-    } catch {
-      add(new Date(), { seconds: secondsUntilStart })
+    } finally {
+      // Use logic below
     }
   }
+  const blocksUntilBlock = block - currentBlock
+  const secondsUntilStart = blocksUntilBlock * BSC_BLOCK_TIME
   return add(new Date(), { seconds: secondsUntilStart })
 }
 

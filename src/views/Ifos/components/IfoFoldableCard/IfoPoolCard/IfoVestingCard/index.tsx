@@ -5,7 +5,7 @@ import Divider from 'components/Divider'
 import { Ifo, PoolIds } from 'config/constants/types'
 import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
 import useIfoVesting from 'views/Ifos/hooks/useIfoVesting'
-import { getFullDisplayBalance } from 'utils/formatBalance'
+import { getFullDisplayBalance } from '@pancakeswap/utils/formatBalance'
 import ProgressStepper from './ProgressStepper'
 import TotalPurchased from './TotalPurchased'
 import TotalAvailableClaim from './TotalAvailableClaim'
@@ -29,7 +29,13 @@ const IfoVestingCard: React.FC<React.PropsWithChildren<IfoVestingCardProps>> = (
 }) => {
   const { t } = useTranslation()
   const { token } = ifo
+  const { vestingStartTime } = publicIfoData
   const userPool = walletIfoData[poolId]
+  const { duration } = publicIfoData[poolId]?.vestingInformation
+
+  const currentTimeStamp = new Date().getTime()
+  const timeVestingEnd = vestingStartTime === 0 ? currentTimeStamp : (vestingStartTime + duration) * 1000
+  const isVestingOver = currentTimeStamp > timeVestingEnd
 
   const { amountReleased, amountInVesting, amountAvailableToClaim, amountAlreadyClaimed } = useIfoVesting({
     poolId,
@@ -47,7 +53,12 @@ const IfoVestingCard: React.FC<React.PropsWithChildren<IfoVestingCardProps>> = (
       <Box>
         <ProgressStepper poolId={poolId} publicIfoData={publicIfoData} />
         <TotalPurchased ifo={ifo} poolId={poolId} walletIfoData={walletIfoData} />
-        <ReleasedTokenInfo ifo={ifo} amountReleased={amountReleased} amountInVesting={amountInVesting} />
+        <ReleasedTokenInfo
+          ifo={ifo}
+          amountReleased={amountReleased}
+          amountInVesting={amountInVesting}
+          isVestingOver={isVestingOver}
+        />
         <Divider />
         <TotalAvailableClaim ifo={ifo} amountAvailableToClaim={amountAvailableToClaim} />
         <Text mb="24px" color="textSubtle" fontSize="14px">

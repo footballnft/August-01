@@ -33,7 +33,7 @@ interface WalletModalProps extends InjectedModalProps {
 export const LOW_BNB_BALANCE = parseUnits('2', 'gwei')
 
 const ModalHeader = styled(UIKitModalHeader)`
-  background: ${({ theme }) => theme.colors.gradients.bubblegum};
+  background: ${({ theme }) => theme.colors.gradientBubblegum};
 `
 
 const Tabs = styled.div`
@@ -66,7 +66,7 @@ const WalletModal: React.FC<React.PropsWithChildren<WalletModalProps>> = ({
   )
 
   return (
-    <ModalContainer title={t('Welcome!')} $minWidth="320px">
+    <ModalContainer title={t('Welcome!')} $minWidth="360px">
       <ModalHeader>
         <ModalTitle>
           <Heading>{t('Your Wallet')}</Heading>
@@ -78,9 +78,9 @@ const WalletModal: React.FC<React.PropsWithChildren<WalletModalProps>> = ({
       {view !== WalletView.WRONG_NETWORK && <TabsComponent />}
       <ModalBody p="24px" width="100%">
         {view === WalletView.WALLET_INFO && (
-          <WalletInfo hasLowNativeBalance={hasLowNativeBalance} onDismiss={onDismiss} />
+          <WalletInfo hasLowNativeBalance={hasLowNativeBalance} switchView={handleClick} onDismiss={onDismiss} />
         )}
-        {view === WalletView.TRANSACTIONS && <WalletTransactions />}
+        {view === WalletView.TRANSACTIONS && <WalletTransactions onDismiss={onDismiss} />}
         {view === WalletView.WRONG_NETWORK && <WalletWrongNetwork onDismiss={onDismiss} />}
       </ModalBody>
     </ModalContainer>

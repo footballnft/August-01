@@ -1,28 +1,20 @@
 import { useContext, useState } from 'react'
-
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useTranslation } from '@pancakeswap/localization'
-import { CalculateIcon, Flex, IconButton, Text, TooltipText, useModal, useTooltip } from '@pancakeswap/uikit'
+import { Text, TooltipText, useModal, useTooltip, Farm as FarmUI, RoiCalculatorModal } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
 import _toNumber from 'lodash/toNumber'
-import RoiCalculatorModal from 'components/RoiCalculatorModal'
-import BCakeCalculator from 'components/RoiCalculatorModal/BCakeCalculator'
-import { useFarmFromPid, useFarmUser, useLpTokenPrice } from 'state/farms/hooks'
-import styled from 'styled-components'
+import BCakeCalculator from 'views/Farms/components/YieldBooster/components/BCakeCalculator'
+import { useFarmFromPid, useFarmUser } from 'state/farms/hooks'
 import { YieldBoosterStateContext } from '../YieldBooster/components/ProxyFarmContainer'
 import useBoostMultiplier from '../YieldBooster/hooks/useBoostMultiplier'
-
-const ApyLabelContainer = styled(Flex)`
-  cursor: pointer;
-
-  &:hover {
-    opacity: 0.5;
-  }
-`
+import { useGetBoostedMultiplier } from '../YieldBooster/hooks/useGetBoostedAPR'
 
 export interface ApyButtonProps {
   variant: 'text' | 'text-and-button'
   pid: number
   lpSymbol: string
+  lpTokenPrice: BigNumber
   lpLabel?: string
   multiplier: string
   cakePrice?: BigNumber
@@ -40,6 +32,7 @@ const ApyButton: React.FC<React.PropsWithChildren<ApyButtonProps>> = ({
   variant,
   pid,
   lpLabel,
+  lpTokenPrice,
   lpSymbol,
   cakePrice,
   apr,
@@ -53,30 +46,30 @@ const ApyButton: React.FC<React.PropsWithChildren<ApyButtonProps>> = ({
   boosted,
 }) => {
   const { t } = useTranslation()
-  const [bCakeMultiplier, setBCakeMultiplier] = useState<string | null>(() => null)
-  const lpPrice = useLpTokenPrice(lpSymbol)
+  const { account } = useActiveWeb3React()
+  const [bCakeMultiplier, setBCakeMultiplier] = useState<number | null>(() => null)
   const { tokenBalance, stakedBalance, proxy } = useFarmUser(pid)
   const { lpTotalSupply } = useFarmFromPid(pid)
   const { boosterState, proxyAddress } = useContext(YieldBoosterStateContext)
-  const boostMultiplier = useBoostMultiplier({ pid, boosterState, proxyAddress })
+  const userBalanceInFarm = stakedBalance.plus(tokenBalance).gt(0)
+    ? stakedBalance.plus(tokenBalance)
+    : proxy.stakedBalance.plus(proxy.tokenBalance)
+  const boosterMultiplierFromFE = useGetBoostedMultiplier(userBalanceInFarm, lpTotalSupply)
+  const boostMultiplierFromSC = useBoostMultiplier({ pid, boosterState, proxyAddress })
+  const boostMultiplier = userBalanceInFarm.eq(0) ? boostMultiplierFromSC : boosterMultiplierFromFE
   const boostMultiplierDisplay = boostMultiplier.toLocaleString(undefined, { maximumFractionDigits: 3 })
   const [onPresentApyModal] = useModal(
     <RoiCalculatorModal
+      account={account}
       pid={pid}
       linkLabel={t('Get %symbol%', { symbol: lpLabel })}
-      stakingTokenBalance={
-        stakedBalance.plus(tokenBalance).gt(0)
-          ? stakedBalance.plus(tokenBalance)
-          : proxy.stakedBalance.plus(proxy.tokenBalance)
-      }
+      stakingTokenBalance={userBalanceInFarm}
       stakingTokenSymbol={lpSymbol}
-      stakingTokenPrice={lpPrice.toNumber()}
+      stakingTokenPrice={lpTokenPrice.toNumber()}
       earningTokenPrice={cakePrice.toNumber()}
-      apr={bCakeMultiplier ? apr * _toNumber(bCakeMultiplier) : apr}
+      apr={bCakeMultiplier ? apr * bCakeMultiplier : apr}
       multiplier={multiplier}
-      displayApr={
-        bCakeMultiplier ? (_toNumber(displayApr) - apr + apr * _toNumber(bCakeMultiplier)).toFixed(2) : displayApr
-      }
+      displayApr={bCakeMultiplier ? (_toNumber(displayApr) - apr + apr * bCakeMultiplier).toFixed(2) : displayApr}
       linkHref={addLiquidityUrl}
       isFarm
       bCakeCalculatorSlot={(calculatorBalance) =>
@@ -135,32 +128,23 @@ const ApyButton: React.FC<React.PropsWithChildren<ApyButtonProps>> = ({
   )
 
   return (
-    <Flex flexDirection="column" alignItems="flex-start">
-      <ApyLabelContainer
-        alignItems="center"
-        onClick={(event) => {
-          if (hideButton) return
-          handleClickButton(event)
-        }}
-        style={strikethrough && { textDecoration: 'line-through' }}
-      >
-        {useTooltipText ? (
-          <>
-            <TooltipText ref={targetRef} decorationColor="secondary">
-              {displayApr}%
-            </TooltipText>
-            {tooltipVisible && tooltip}
-          </>
-        ) : (
-          <>{displayApr}%</>
-        )}
-        {variant === 'text-and-button' && (
-          <IconButton variant="text" scale="sm" ml="4px">
-            <CalculateIcon width="18px" />
-          </IconButton>
-        )}
-      </ApyLabelContainer>
-    </Flex>
+    <FarmUI.FarmApyButton
+      variant={variant}
+      hideButton={hideButton}
+      strikethrough={strikethrough}
+      handleClickButton={handleClickButton}
+    >
+      {useTooltipText ? (
+        <>
+          <TooltipText ref={targetRef} decorationColor="secondary">
+            {displayApr}%
+          </TooltipText>
+          {tooltipVisible && tooltip}
+        </>
+      ) : (
+        <>{displayApr}%</>
+      )}
+    </FarmUI.FarmApyButton>
   )
 }
 

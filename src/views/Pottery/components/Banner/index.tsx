@@ -1,16 +1,16 @@
 import styled from 'styled-components'
 import { useMemo } from 'react'
-import { Flex, Box, Text } from '@pancakeswap/uikit'
+import { Flex, Box, Text, Balance } from '@pancakeswap/uikit'
 import { useTranslation } from '@pancakeswap/localization'
 import { usePriceCakeBusd } from 'state/farms/hooks'
 import StakeToWinButton from 'views/Pottery/components/Banner/StakeToWinButton'
-import { BannerTimer } from 'views/Pottery/components/Timer'
+import { BannerTimer, LockTimer } from 'views/Pottery/components/Timer'
+import { PotteryDepositStatus } from 'state/types'
 import { OutlineText, DarkTextStyle } from 'views/Pottery/components/TextStyle'
 import TicketsDecorations from 'views/Pottery/components/Banner/TicketsDecorations'
-import { getBalanceNumber } from 'utils/formatBalance'
+import { getBalanceNumber } from '@pancakeswap/utils/formatBalance'
 import { useVaultApy } from 'hooks/useVaultApy'
 import { weeksToSeconds } from 'views/Pools/components/utils/formatSecondsToWeeks'
-import Balance from 'components/Balance'
 import { usePotteryData } from 'state/pottery/hook'
 
 const PotteryBanner = styled(Flex)`
@@ -116,12 +116,15 @@ const Banner: React.FC<React.PropsWithChildren<BannerProps>> = ({ handleScroll }
             {t('To be won !')}
           </DarkTextStyle>
           <StakeToWinButton handleScroll={handleScroll} />
+          {publicData.getStatus === PotteryDepositStatus.BEFORE_LOCK && publicData.lockTime ? (
+            <LockTimer lockTime={publicData.lockTime} />
+          ) : null}
           <Box style={{ marginTop: '30px' }}>
             <Text color="white" bold as="span">
               {t('Deposit CAKE for')}
             </Text>
             <DarkTextStyle ml="3px" bold as="span">
-              {t('10 Weeks to earn')}
+              {t('10 Weeks')}
             </DarkTextStyle>
           </Box>
           <Box>

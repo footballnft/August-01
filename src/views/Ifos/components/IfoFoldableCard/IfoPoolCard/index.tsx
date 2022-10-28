@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import styled from 'styled-components'
-import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useTranslation, ContextApi } from '@pancakeswap/localization'
 import { Box, Card, CardBody, CardHeader, Flex, HelpIcon, Text, useTooltip } from '@pancakeswap/uikit'
 import { Ifo, PoolIds } from 'config/constants/types'
 import { useProfile } from 'state/profile/hooks'
 import useCriterias from 'views/Ifos/hooks/v3/useCriterias'
 import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
+import { useWeb3React } from '@pancakeswap/wagmi'
 import { EnableStatus, CardConfigReturn } from '../types'
 import IfoCardTokens from './IfoCardTokens'
 import IfoCardActions from './IfoCardActions'
@@ -95,7 +95,7 @@ const SmallCard: React.FC<React.PropsWithChildren<IfoCardProps>> = ({
   enableStatus,
 }) => {
   const { t } = useTranslation()
-  const { account } = useActiveWeb3React()
+  const { account } = useWeb3React()
 
   const { admissionProfile, pointThreshold, vestingInformation } = publicIfoData[poolId]
 
@@ -134,6 +134,8 @@ const SmallCard: React.FC<React.PropsWithChildren<IfoCardProps>> = ({
     )
   }, [account, ifo, poolId, publicIfoData, vestingInformation, walletIfoData])
 
+  const cardTitle = ifo.cIFO ? `${config.title} (cIFO)` : config.title
+
   return (
     <>
       {tooltipVisible && tooltip}
@@ -141,7 +143,7 @@ const SmallCard: React.FC<React.PropsWithChildren<IfoCardProps>> = ({
         <CardHeader p="16px 24px" variant={config.variant}>
           <Flex justifyContent="space-between" alignItems="center">
             <Text bold fontSize="20px" lineHeight={1}>
-              {config.title}
+              {cardTitle}
             </Text>
             <div ref={targetRef}>
               <HelpIcon />

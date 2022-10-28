@@ -15,10 +15,11 @@ import stringify from 'fast-json-stable-stringify'
 import fromPairs from 'lodash/fromPairs'
 import type { AppState } from 'state'
 import { getMasterChefAddress } from 'utils/addressHelpers'
-import { getBalanceAmount } from 'utils/formatBalance'
+import { getBalanceAmount } from '@pancakeswap/utils/formatBalance'
 import multicall, { multicallv2 } from 'utils/multicall'
 import { chains } from 'utils/wagmi'
 import splitProxyFarms from 'views/Farms/components/YieldBooster/helpers/splitProxyFarms'
+import { verifyBscNetwork } from 'utils/verifyBscNetwork'
 import { resetUserState } from '../global/actions'
 import { SerializedFarm, SerializedFarmsState } from '../types'
 import fetchFarms from './fetchFarms'
@@ -79,17 +80,23 @@ const farmApiFetch = (chainId: number) => fetch(`${FARM_API}/${chainId}`).then((
 
 const initialState: SerializedFarmsState = {
   data: [],
+  chainId: null,
   loadArchivedFarmsData: false,
   userDataLoaded: false,
   loadingKeys: {},
 }
 
 // Async thunks
-export const fetchInitialFarmsData = createAsyncThunk<SerializedFarm[], { chainId: number }>(
-  'farms/fetchInitialFarmsData',
-  async ({ chainId }) => {
-    const farmDataList = await getFarmConfig(chainId)
-    return farmDataList.map((farm) => ({
+export const fetchInitialFarmsData = createAsyncThunk<
+  { data: SerializedFarm[]; chainId: number },
+  { chainId: number },
+  {
+    state: AppState
+  }
+>('farms/fetchInitialFarmsData', async ({ chainId }) => {
+  const farmDataList = await getFarmConfig(chainId)
+  return {
+    data: farmDataList.map((farm) => ({
       ...farm,
       userData: {
         allowance: '0',
@@ -97,9 +104,10 @@ export const fetchInitialFarmsData = createAsyncThunk<SerializedFarm[], { chainI
         stakedBalance: '0',
         earnings: '0',
       },
-    }))
-  },
-)
+    })),
+    chainId,
+  }
+})
 
 let fallback = false
 
@@ -111,7 +119,11 @@ export const fetchFarmsPublicDataAsync = createAsyncThunk<
   }
 >(
   'farms/fetchFarmsPublicDataAsync',
-  async ({ pids, chainId, flag = 'pkg' }) => {
+  async ({ pids, chainId, flag = 'pkg' }, { dispatch, getState }) => {
+    const state = getState()
+    if (state.farms.chainId !== chainId) {
+      await dispatch(fetchInitialFarmsData({ chainId }))
+    }
     const chain = chains.find((c) => c.id === chainId)
     if (!chain || !farmFetcher.isChainSupported(chain.id)) throw new Error('chain not supported')
     try {
@@ -232,16 +244,17 @@ export const fetchFarmUserDataAsync = createAsyncThunk<
   }
 >(
   'farms/fetchFarmUserDataAsync',
-  async ({ account, pids, proxyAddress, chainId }, config) => {
-    if (!farmFetcher.isChainSupported(chainId)) {
-      throw new Error(`chain id ${chainId} not supported`)
+  async ({ account, pids, proxyAddress, chainId }, { dispatch, getState }) => {
+    const state = getState()
+    if (state.farms.chainId !== chainId) {
+      await dispatch(fetchInitialFarmsData({ chainId }))
     }
-    const poolLength = config.getState().farms.poolLength ?? (await fetchMasterChefFarmPoolLength(chainId))
+    const poolLength = state.farms.poolLength ?? (await fetchMasterChefFarmPoolLength(ChainId.BSC))
     const farmsConfig = await getFarmConfig(chainId)
     const farmsCanFetch = farmsConfig.filter(
       (farmConfig) => pids.includes(farmConfig.pid) && poolLength > farmConfig.pid,
     )
-    if (proxyAddress && farmsCanFetch?.length) {
+    if (proxyAddress && farmsCanFetch?.length && verifyBscNetwork(chainId)) {
       const { normalFarms, farmsWithProxy } = splitProxyFarms(farmsCanFetch)
 
       const [proxyAllowances, normalAllowances] = await Promise.all([
@@ -304,14 +317,16 @@ export const farmsSlice = createSlice({
     })
     // Init farm data
     builder.addCase(fetchInitialFarmsData.fulfilled, (state, action) => {
-      const farmData = action.payload
-      state.data = farmData
+      const { data, chainId } = action.payload
+      state.data = data
+      state.chainId = chainId
     })
 
     // Update farms with live data
     builder.addCase(fetchFarmsPublicDataAsync.fulfilled, (state, action) => {
       const [farmPayload, poolLength, regularCakePerBlock] = action.payload
       const farmPayloadPidMap = fromPairs(farmPayload.map((farmData) => [farmData.pid, farmData]))
+
       state.data = state.data.map((farm) => {
         const liveFarmData = farmPayloadPidMap[farm.pid]
         return { ...farm, ...liveFarmData }

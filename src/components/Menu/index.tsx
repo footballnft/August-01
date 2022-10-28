@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useRouter } from 'next/router'
-import { NextLinkFromReactRouter } from 'components/NextLink'
-import { Menu as UikitMenu } from '@pancakeswap/uikit'
+import { Menu as UikitMenu, NextLinkFromReactRouter } from '@pancakeswap/uikit'
 import { useTranslation, languageList } from '@pancakeswap/localization'
 import { NetworkSwitcher } from 'components/NetworkSwitcher'
 import useTheme from 'hooks/useTheme'

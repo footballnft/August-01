@@ -1,15 +1,23 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/router'
-import { CurrencyAmount, Token, Trade, TradeType, Currency } from '@pancakeswap/sdk'
+import { CurrencyAmount, Token, Trade, TradeType, Currency, Percent } from '@pancakeswap/sdk'
 import replaceBrowserHistory from '@pancakeswap/utils/replaceBrowserHistory'
-import { Button, Box, Flex, useModal, BottomDrawer, Link, useMatchBreakpoints } from '@pancakeswap/uikit'
+import {
+  Button,
+  Box,
+  Flex,
+  useModal,
+  BottomDrawer,
+  Link,
+  useMatchBreakpoints,
+  Swap as SwapUI,
+} from '@pancakeswap/uikit'
 
 import { useTranslation } from '@pancakeswap/localization'
 import { AutoColumn } from 'components/Layout/Column'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import { AppBody } from 'components/App'
 import ConnectWalletButton from 'components/ConnectWalletButton'
-import Footer from 'components/Menu/Footer'
 import useGelatoLimitOrders from 'hooks/limitOrders/useGelatoLimitOrders'
 import useGasOverhead from 'hooks/limitOrders/useGasOverhead'
 import useTheme from 'hooks/useTheme'
@@ -125,7 +133,7 @@ const LimitOrders = () => {
   const [approvalSubmitted, setApprovalSubmitted] = useState<boolean>(false)
 
   const maxAmountInput: CurrencyAmount<Currency> | undefined = maxAmountSpend(currencyBalances.input)
-  const hideMaxButton = Boolean(maxAmountInput && parsedAmounts.input?.equalTo(maxAmountInput))
+  const atMaxAmountInput = Boolean(maxAmountInput && parsedAmounts.input?.equalTo(maxAmountInput))
 
   // Trade execution price is always "in MUL mode", even if UI handles DIV rate
   const currentMarketRate = trade?.executionPrice
@@ -158,6 +166,14 @@ const LimitOrders = () => {
       handleInput(Field.PRICE, value)
     },
     [handleInput],
+  )
+  const handlePercentInput = useCallback(
+    (percent) => {
+      if (maxAmountInput) {
+        handleInput(Field.INPUT, maxAmountInput.multiply(new Percent(percent, 100)).toExact())
+      }
+    },
+    [maxAmountInput, handleInput],
   )
   const handleMaxInput = useCallback(() => {
     if (maxAmountInput) {
@@ -354,9 +370,11 @@ const LimitOrders = () => {
                     <CurrencyInputPanel
                       label={independentField === Field.OUTPUT ? t('From (estimated)') : t('From')}
                       value={formattedAmounts.input}
-                      showMaxButton={!hideMaxButton}
+                      showQuickInputButton
+                      showMaxButton={!atMaxAmountInput}
                       currency={currencies.input}
                       onUserInput={handleTypeInput}
+                      onPercentInput={handlePercentInput}
                       onMax={handleMaxInput}
                       onCurrencySelect={handleInputSelect}
                       otherCurrency={currencies.output}
@@ -456,7 +474,7 @@ const LimitOrders = () => {
           )}
           {isSideFooter && (
             <Box display={['none', null, null, 'block']} width="100%" height="100%">
-              <Footer variant="side" helpUrl={LIMIT_ORDERS_DOCS_URL} />
+              <SwapUI.Footer variant="side" helpUrl={LIMIT_ORDERS_DOCS_URL} />
             </Box>
           )}
         </Flex>

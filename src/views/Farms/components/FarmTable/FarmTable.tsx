@@ -3,8 +3,8 @@ import { latinise } from 'utils/latinise'
 import styled from 'styled-components'
 import { RowType } from '@pancakeswap/uikit'
 import BigNumber from 'bignumber.js'
-import { getBalanceNumber } from 'utils/formatBalance'
-import { BIG_ZERO } from 'utils/bigNumber'
+import { getBalanceNumber } from '@pancakeswap/utils/formatBalance'
+import { BIG_ZERO } from '@pancakeswap/utils/bigNumber'
 import { useRouter } from 'next/router'
 import { getDisplayApr } from '../getDisplayApr'
 
@@ -118,6 +118,7 @@ const FarmTable: React.FC<React.PropsWithChildren<ITableProps>> = ({ farms, cake
         multiplier: farm.multiplier,
         lpLabel,
         lpSymbol: farm.lpSymbol,
+        lpTokenPrice: farm.lpTokenPrice,
         tokenAddress,
         quoteTokenAddress,
         cakePrice,
@@ -130,6 +131,7 @@ const FarmTable: React.FC<React.PropsWithChildren<ITableProps>> = ({ farms, cake
         token: farm.token,
         quoteToken: farm.quoteToken,
         isReady: farm.multiplier !== undefined,
+        isStable: farm.isStable,
       },
       earned: {
         earnings: getFarmEarnings(farm),

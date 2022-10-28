@@ -1,7 +1,6 @@
 import { useTranslation } from '@pancakeswap/localization'
 import { ChainId } from '@pancakeswap/sdk'
-import { ArrowForwardIcon, Button, Grid, Message, MessageText, Modal, Text } from '@pancakeswap/uikit'
-import { FlexGap } from 'components/Layout/Flex'
+import { ArrowForwardIcon, Button, Grid, Message, MessageText, Modal, Text, FlexGap } from '@pancakeswap/uikit'
 import { ChainLogo } from 'components/Logo/ChainLogo'
 import useAuth from 'hooks/useAuth'
 import { useSessionChainId } from 'hooks/useSessionChainId'
@@ -43,10 +42,14 @@ export function WrongNetworkModal({ currentChain, onDismiss }: { currentChain: C
             </FlexGap>
           </MessageText>
         </Message>
-        {canSwitch && (
+        {canSwitch ? (
           <Button isLoading={isLoading} onClick={() => switchNetworkAsync(chainId)}>
             {isLoading ? <Dots>{switchText}</Dots> : switchText}
           </Button>
+        ) : (
+          <Message variant="danger">
+            <MessageText>{t('Unable to switch network. Please try it on your wallet')}</MessageText>
+          </Message>
         )}
         {isConnected && (
           <Button

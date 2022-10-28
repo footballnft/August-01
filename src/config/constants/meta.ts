@@ -6,7 +6,7 @@ export const DEFAULT_META: PageMeta = {
   title: 'AmehSwap',
   description:
     'Discover AmehSwap, the leading fiat to crypto DEX on Binance Smart Chain (BSC), the fastest and most seamless experience for the conversion of your fiat to crypto on PancakeSwap.',
-  image: 'https://amehswap.com/images/hero.png',
+  image: 'https://amehswap.com/images/ameh-hero.png',
 }
 
 interface PathList {

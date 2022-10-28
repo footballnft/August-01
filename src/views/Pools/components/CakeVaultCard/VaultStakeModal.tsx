@@ -27,19 +27,19 @@ import { useVaultPoolContract } from 'hooks/useContract'
 import useTheme from 'hooks/useTheme'
 import useWithdrawalFeeTimer from 'views/Pools/hooks/useWithdrawalFeeTimer'
 import BigNumber from 'bignumber.js'
-import { getFullDisplayBalance, formatNumber, getDecimalAmount } from 'utils/formatBalance'
+import { getFullDisplayBalance, formatNumber, getDecimalAmount } from '@pancakeswap/utils/formatBalance'
 import useCatchTxError from 'hooks/useCatchTxError'
 import { fetchCakeVaultUserData } from 'state/pools'
 import { DeserializedPool, VaultKey } from 'state/types'
-import { getInterestBreakdown } from 'utils/compoundApyHelpers'
+import { getInterestBreakdown } from '@pancakeswap/utils/compoundApyHelpers'
 import { ToastDescriptionWithTx } from 'components/Toast'
 import { vaultPoolConfig } from 'config/constants/pools'
-import { useCallWithGasPrice } from 'hooks/useCallWithGasPrice'
-import { getFullDecimalMultiplier } from 'utils/getFullDecimalMultiplier'
+import { getFullDecimalMultiplier } from '@pancakeswap/utils/getFullDecimalMultiplier'
+import { useCallWithMarketGasPrice } from 'hooks/useCallWithMarketGasPrice'
 import { VaultRoiCalculatorModal } from '../Vault/VaultRoiCalculatorModal'
 import ConvertToLock from '../LockedPool/Common/ConvertToLock'
 import FeeSummary from './FeeSummary'
-import { MIN_LOCK_AMOUNT } from '../../helpers'
+import { MIN_LOCK_AMOUNT, convertCakeToShares } from '../../helpers'
 
 interface VaultStakeModalProps {
   pool: DeserializedPool
@@ -77,14 +77,16 @@ const VaultStakeModal: React.FC<React.PropsWithChildren<VaultStakeModalProps>> =
   const { account } = useWeb3React()
   const { fetchWithCatchTxError, loading: pendingTx } = useCatchTxError()
   const vaultPoolContract = useVaultPoolContract(pool.vaultKey)
-  const { callWithGasPrice } = useCallWithGasPrice()
+  const { callWithMarketGasPrice } = useCallWithMarketGasPrice()
   const {
+    pricePerFullShare,
     userData: {
       lastDepositedTime,
       userShares,
       balance: { cakeAsBigNumber, cakeAsNumberBalance },
     },
   } = useVaultPoolByKey(pool.vaultKey)
+
   const { t } = useTranslation()
   const { theme } = useTheme()
   const { toastSuccess } = useToast()
@@ -152,9 +154,21 @@ const VaultStakeModal: React.FC<React.PropsWithChildren<VaultStakeModalProps>> =
     const receipt = await fetchWithCatchTxError(() => {
       // .toString() being called to fix a BigNumber error in prod
       // as suggested here https://github.com/ChainSafe/web3.js/issues/2077
-      return isWithdrawingAll
-        ? callWithGasPrice(vaultPoolContract, 'withdrawAll', undefined, callOptions)
-        : callWithGasPrice(vaultPoolContract, 'withdrawByAmount', [convertedStakeAmount.toString()], callOptions)
+      if (isWithdrawingAll) {
+        return callWithMarketGasPrice(vaultPoolContract, 'withdrawAll', undefined, callOptions)
+      }
+
+      if (pool.vaultKey === VaultKey.CakeFlexibleSideVault) {
+        const { sharesAsBigNumber } = convertCakeToShares(convertedStakeAmount, pricePerFullShare)
+        return callWithMarketGasPrice(vaultPoolContract, 'withdraw', [sharesAsBigNumber.toString()], callOptions)
+      }
+
+      return callWithMarketGasPrice(
+        vaultPoolContract,
+        'withdrawByAmount',
+        [convertedStakeAmount.toString()],
+        callOptions,
+      )
     })
 
     if (receipt?.status) {
@@ -175,7 +189,7 @@ const VaultStakeModal: React.FC<React.PropsWithChildren<VaultStakeModalProps>> =
       // as suggested here https://github.com/ChainSafe/web3.js/issues/2077
       const extraArgs = pool.vaultKey === VaultKey.CakeVault ? [lockDuration.toString()] : []
       const methodArgs = [convertedStakeAmount.toString(), ...extraArgs]
-      return callWithGasPrice(vaultPoolContract, 'deposit', methodArgs, callOptions)
+      return callWithMarketGasPrice(vaultPoolContract, 'deposit', methodArgs, callOptions)
     })
 
     if (receipt?.status) {
@@ -218,7 +232,7 @@ const VaultStakeModal: React.FC<React.PropsWithChildren<VaultStakeModalProps>> =
     <Modal
       title={isRemovingStake ? t('Unstake') : t('Stake in Pool')}
       onDismiss={onDismiss}
-      headerBackground={theme.colors.gradients.cardHeader}
+      headerBackground={theme.colors.gradientCardHeader}
     >
       <Flex alignItems="center" justifyContent="space-between" mb="8px">
         <Text bold>{isRemovingStake ? t('Unstake') : t('Stake')}:</Text>

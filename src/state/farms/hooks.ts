@@ -6,7 +6,7 @@ import { useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { useAppDispatch } from 'state'
 import useSWRImmutable from 'swr/immutable'
-import { BIG_ZERO } from 'utils/bigNumber'
+import { BIG_ZERO } from '@pancakeswap/utils/bigNumber'
 import { useBCakeProxyContractAddress } from 'views/Farms/hooks/useBCakeProxyContractAddress'
 import { getMasterchefContract } from 'utils/contractHelpers'
 import { useFastRefreshEffect } from 'hooks/useRefreshEffect'
@@ -80,7 +80,8 @@ export const usePollFarmsWithUserData = () => {
 const coreFarmPIDs = {
   56: [2, 3],
   97: [4, 10],
-  5: [1, 2],
+  5: [13, 11],
+  1: [124, 125],
 }
 
 export const usePollCoreFarmData = () => {
@@ -103,7 +104,7 @@ export const usePollCoreFarmData = () => {
 
 export const useFarms = (): DeserializedFarmsState => {
   const { chainId } = useActiveWeb3React()
-  return useSelector(farmSelector(chainId))
+  return useSelector(useMemo(() => farmSelector(chainId), [chainId]))
 }
 
 export const useFarmsPoolLength = (): number => {

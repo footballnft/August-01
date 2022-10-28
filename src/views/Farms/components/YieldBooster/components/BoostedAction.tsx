@@ -1,30 +1,39 @@
 import { useTranslation } from '@pancakeswap/localization'
-import { AutoRenewIcon } from '@pancakeswap/uikit'
+import { AutoRenewIcon, NextLinkFromReactRouter, Button } from '@pancakeswap/uikit'
 import { ReactNode, useCallback, useContext } from 'react'
 
-import _isEmpty from 'lodash/isEmpty'
-import { NextLinkFromReactRouter } from 'components/NextLink'
-
-import { YieldBoosterState } from '../hooks/useYieldBoosterState'
+import BigNumber from 'bignumber.js'
 import useBoosterFarmHandlers from '../hooks/useBoosterFarmHandlers'
+import { useGetBoostedMultiplier } from '../hooks/useGetBoostedAPR'
+import { YieldBoosterState } from '../hooks/useYieldBoosterState'
 
 import useBoostMultiplier from '../hooks/useBoostMultiplier'
 import ActionButton from './ActionButton'
 import CreateProxyButton from './CreateProxyButton'
-import { YieldBoosterStateContext } from './ProxyFarmContainer'
 import MigrateActionButton from './MigrateActionButton'
+import { YieldBoosterStateContext } from './ProxyFarmContainer'
 
 interface BoostedActionPropsType {
   farmPid: number
   title: (status: YieldBoosterState) => ReactNode
   desc: (actionBtn: ReactNode) => ReactNode
+  userBalanceInFarm: BigNumber
+  lpTotalSupply: BigNumber
 }
 
-const BoostedAction: React.FunctionComponent<BoostedActionPropsType> = ({ farmPid, title, desc }) => {
+const BoostedAction: React.FunctionComponent<BoostedActionPropsType> = ({
+  farmPid,
+  title,
+  desc,
+  userBalanceInFarm,
+  lpTotalSupply,
+}) => {
   const { t } = useTranslation()
   const { boosterState, refreshActivePool, refreshProxyAddress, proxyAddress } = useContext(YieldBoosterStateContext)
   const { isConfirming, ...handlers } = useBoosterFarmHandlers(farmPid, refreshActivePool)
-  const boostMultiplier = useBoostMultiplier({ pid: farmPid, boosterState, proxyAddress })
+  const boostMultiplierFromSC = useBoostMultiplier({ pid: farmPid, boosterState, proxyAddress })
+  const boostedMultiplierFromFE = useGetBoostedMultiplier(userBalanceInFarm, lpTotalSupply)
+  const boostMultiplier = userBalanceInFarm.eq(0) ? boostMultiplierFromSC : boostedMultiplierFromFE
   const boostMultiplierDisplay = boostMultiplier.toLocaleString(undefined, { maximumFractionDigits: 3 })
 
   const renderBtn = useCallback(() => {
@@ -42,9 +51,12 @@ const BoostedAction: React.FunctionComponent<BoostedActionPropsType> = ({ farmPi
             title={`${t('Up to')} ${boostMultiplierDisplay}x`}
             description={t('Lock CAKE to activate yield booster')}
             style={{ whiteSpace: 'nowrap' }}
-          >
-            <NextLinkFromReactRouter to="/pools">{t('Go to Pool')}</NextLinkFromReactRouter>
-          </ActionButton>
+            button={
+              <NextLinkFromReactRouter to="/pools">
+                <Button> {t('Go to Pool')}</Button>
+              </NextLinkFromReactRouter>
+            }
+          />
         )
       case YieldBoosterState.LOCKED_END:
         return (
@@ -52,9 +64,12 @@ const BoostedAction: React.FunctionComponent<BoostedActionPropsType> = ({ farmPi
             title={`${t('Up to')} ${boostMultiplierDisplay}x`}
             description={t('Lock CAKE is ended. Re-lock CAKE to activate yield booster')}
             style={{ whiteSpace: 'nowrap' }}
-          >
-            <NextLinkFromReactRouter to="/pools">{t('Go to Pool')}</NextLinkFromReactRouter>
-          </ActionButton>
+            button={
+              <NextLinkFromReactRouter to="/pools">
+                <Button> {t('Go to Pool')}</Button>
+              </NextLinkFromReactRouter>
+            }
+          />
         )
       case YieldBoosterState.NO_PROXY_CREATED:
         return (
@@ -96,6 +111,7 @@ const BoostedAction: React.FunctionComponent<BoostedActionPropsType> = ({ farmPi
           </ActionButton>
         )
       case YieldBoosterState.ACTIVE:
+      case YieldBoosterState.ACTIVE_AND_NO_LP:
         return (
           <ActionButton
             disabled={isConfirming}
@@ -136,7 +152,7 @@ const BoostedAction: React.FunctionComponent<BoostedActionPropsType> = ({ farmPi
 
   if ([YieldBoosterState.NO_MIGRATE, YieldBoosterState.DEACTIVE].includes(boosterState)) {
     status = t('Ready')
-  } else if (boosterState === YieldBoosterState.ACTIVE) {
+  } else if ([YieldBoosterState.ACTIVE, YieldBoosterState.ACTIVE_AND_NO_LP].includes(boosterState)) {
     status = t('Active')
   }
 

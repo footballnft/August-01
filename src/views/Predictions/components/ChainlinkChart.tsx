@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { ResponsiveContainer, XAxis, YAxis, Tooltip, AreaChart, Area, Dot } from 'recharts'
 import useTheme from 'hooks/useTheme'
 import { LineChartLoader } from 'views/Info/components/ChartLoaders'
@@ -9,11 +9,10 @@ import { useSWRConfig } from 'swr'
 import { useChainlinkOracleContract } from 'hooks/useContract'
 import { ChainlinkOracle } from 'config/abi/types'
 import chainlinkOracleAbi from 'config/abi/chainlinkOracle.json'
-import { FlexGap } from 'components/Layout/Flex'
-import { formatBigNumberToFixed } from 'utils/formatBalance'
+import { formatBigNumberToFixed } from '@pancakeswap/utils/formatBalance'
 import { useGetRoundsByCloseOracleId, useGetSortedRounds } from 'state/predictions/hooks'
 import styled from 'styled-components'
-import { Flex, Text, FlexProps } from '@pancakeswap/uikit'
+import { Flex, Text, FlexProps, FlexGap } from '@pancakeswap/uikit'
 import PairPriceDisplay from 'components/PairPriceDisplay'
 import { NodeRound } from 'state/types'
 import useSwiper from '../hooks/useSwiper'
@@ -83,15 +82,6 @@ type ChartData = {
   startedAt: number
 }
 
-const HoverUpdater = ({ payload }) => {
-  const mutate = useChartHoverMutate()
-  useEffect(() => {
-    mutate(payload)
-  }, [mutate, payload])
-
-  return null
-}
-
 function useChartHover() {
   const { data } = useSWRImmutable<ChartData>('chainlinkChartHover')
   return data
@@ -116,7 +106,7 @@ const ChainlinkChartWrapper = styled(Flex)<{ isMobile?: boolean }>`
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: ${({ theme, isMobile }) => (isMobile ? theme.card.background : theme.colors.gradients.bubblegum)};
+  background: ${({ theme, isMobile }) => (isMobile ? theme.card.background : theme.colors.gradientBubblegum)};
 `
 
 const HoverData = ({ rounds }: { rounds: { [key: string]: NodeRound } }) => {
@@ -256,7 +246,10 @@ const Chart = ({
         <Tooltip
           cursor={{ stroke: theme.colors.textSubtle, strokeDasharray: '3 3' }}
           contentStyle={{ display: 'none' }}
-          formatter={(_, __, props) => <HoverUpdater payload={props.payload} />}
+          formatter={(tooltipValue, name, props) => {
+            mutate(props.payload)
+            return null
+          }}
         />
         <Area
           dataKey="answer"

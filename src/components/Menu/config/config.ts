@@ -8,12 +8,12 @@ import {
   NftIcon,
   NftFillIcon,
   MoreIcon,
+  DropdownMenuItems,
 } from '@pancakeswap/uikit'
 import { ContextApi } from '@pancakeswap/localization'
 import { nftsBaseUrl } from 'views/Nft/market/constants'
 import { perpLangMap } from 'utils/getPerpetualLanguageCode'
 import { perpTheme } from 'utils/getPerpetualTheme'
-import { DropdownMenuItems } from '@pancakeswap/uikit/src/components/DropdownMenu/types'
 import { SUPPORT_ONLY_BSC } from 'config/constants/supportChains'
 
 export type ConfigMenuDropDownItemsType = DropdownMenuItems & { hideSubNav?: boolean }
@@ -83,6 +83,7 @@ const config: (
           href: `https://perp.pancakeswap.finance/${perpLangMap(languageCode)}/futures/BTCUSDT?theme=${perpTheme(
             isDark,
           )}`,
+          supportChainIds: SUPPORT_ONLY_BSC,
           type: DropdownMenuItemType.EXTERNAL_LINK,
         },
           {
@@ -98,7 +99,6 @@ const config: (
       icon: EarnIcon,
       fillIcon: EarnFillIcon,
         image: '/images/decorations/pe2.png',
-      supportChainIds: SUPPORT_ONLY_BSC,
       items: [
         {
           label: t('Farms'),
@@ -174,7 +174,6 @@ const config: (
         {
           label: t('Info'),
           href: '/info',
-            supportChainIds: SUPPORT_ONLY_BSC,
         },
         {
          // label: t('IFO'),

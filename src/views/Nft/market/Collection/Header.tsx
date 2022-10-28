@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import { Text } from '@pancakeswap/uikit'
 import { Collection } from 'state/nftMarket/types'
-import { formatNumber } from 'utils/formatBalance'
+import { formatNumber } from '@pancakeswap/utils/formatBalance'
 import { useTranslation } from '@pancakeswap/localization'
 import Container from 'components/Layout/Container'
 import MarketPageHeader from '../components/MarketPageHeader'
@@ -52,6 +52,7 @@ const Header: React.FC<React.PropsWithChildren<HeaderProps>> = ({ collection }) 
         <TopBar />
         <BannerHeader bannerImage={banner.large} avatar={<AvatarImage src={avatar} />} />
         <MarketPageTitle
+          address={collection.address}
           title={collection.name}
           description={collection.description ? <Text color="textSubtle">{t(collection.description)}</Text> : null}
         >

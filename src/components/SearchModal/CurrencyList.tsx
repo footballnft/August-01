@@ -1,11 +1,10 @@
 import { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react'
 import { Currency, CurrencyAmount, Token } from '@pancakeswap/sdk'
-import { Text } from '@pancakeswap/uikit'
+import { Text, QuestionHelper } from '@pancakeswap/uikit'
 import styled from 'styled-components'
 import { FixedSizeList } from 'react-window'
 import { wrappedCurrency } from 'utils/wrappedCurrency'
 import { LightGreyCard } from 'components/Card'
-import QuestionHelper from 'components/QuestionHelper'
 import { useTranslation } from '@pancakeswap/localization'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useWeb3React } from '@pancakeswap/wagmi'
@@ -109,7 +108,7 @@ export default function CurrencyList({
   onCurrencySelect,
   otherCurrency,
   fixedListRef,
-  showBNB,
+  showNative,
   showImportView,
   setImportToken,
   breakIndex,
@@ -121,7 +120,7 @@ export default function CurrencyList({
   onCurrencySelect: (currency: Currency) => void
   otherCurrency?: Currency | null
   fixedListRef?: MutableRefObject<FixedSizeList | undefined>
-  showBNB: boolean
+  showNative: boolean
   showImportView: () => void
   setImportToken: (token: Token) => void
   breakIndex: number | undefined
@@ -129,14 +128,14 @@ export default function CurrencyList({
   const native = useNativeCurrency()
 
   const itemData: (Currency | undefined)[] = useMemo(() => {
-    let formatted: (Currency | undefined)[] = showBNB
+    let formatted: (Currency | undefined)[] = showNative
       ? [native, ...currencies, ...inactiveCurrencies]
       : [...currencies, ...inactiveCurrencies]
     if (breakIndex !== undefined) {
       formatted = [...formatted.slice(0, breakIndex), undefined, ...formatted.slice(breakIndex, formatted.length)]
     }
     return formatted
-  }, [breakIndex, currencies, inactiveCurrencies, showBNB, native])
+  }, [breakIndex, currencies, inactiveCurrencies, showNative, native])
 
   const { chainId } = useActiveWeb3React()
 
