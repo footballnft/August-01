@@ -31,7 +31,7 @@ export const shadows: Shadows = {
   tooltip: "0px 0px 2px rgba(0, 0, 0, 0.2), 0px 4px 12px -8px rgba(14, 14, 44, 0.1)",
 };
 
-const spacing: Spacing = [0, 2, 4, 6, 8, 16, 24, 32, 48, 64];
+const spacing: Spacing = [0, 4, 8, 16, 24, 32, 48, 64];
 
 const radii: Radii = {
   small: "4px",
