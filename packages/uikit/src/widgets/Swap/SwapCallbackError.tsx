@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { ErrorIcon } from "../../components";
 
 const SwapCallbackErrorInner = styled.div`
-  background-color: ${({ theme }) => `${theme.colors.failure33}`};
+  background-color: ${({ theme }) => `${theme.colors.failure}33`};
   border-radius: 1rem;
   display: flex;
   align-items: center;
