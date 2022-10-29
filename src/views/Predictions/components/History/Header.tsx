@@ -25,7 +25,7 @@ const Filter = styled.label`
 `
 
 const StyledHeader = styled(Box)`
-  background: ${({ theme }) => theme.colors.gradientBubblegum};
+  background: ${({ theme }) => theme.colors.gradients.bubblegum};
   flex: none;
   padding: 16px;
 `
