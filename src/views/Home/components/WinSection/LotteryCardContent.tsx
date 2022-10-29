@@ -14,7 +14,7 @@ const StyledLink = styled(NextLinkFromReactRouter)`
 `
 
 const StyledBalance = styled(Balance)`
-  background: ${({ theme }) => theme.colors.gradientGold};
+  background: ${({ theme }) => theme.colors.gradients.gold};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 `
