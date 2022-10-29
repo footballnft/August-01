@@ -65,7 +65,7 @@ export const TruncatedText = styled(Text).attrs({ ellipsis: true })`
 `
 
 const SwapCallbackErrorInner = styled.div`
-  background-color: ${({ theme }) => `${theme.colors.failure33}`};
+  background-color: ${({ theme }) => `${theme.colors.failure}33`};
   border-radius: 1rem;
   display: flex;
   align-items: center;
@@ -83,7 +83,7 @@ const SwapCallbackErrorInner = styled.div`
 `
 
 const SwapCallbackErrorInnerAlertTriangle = styled.div`
-  background-color: ${({ theme }) => `${theme.colors.failure33}`};
+  background-color: ${({ theme }) => `${theme.colors.failure}33`};
   display: flex;
   align-items: center;
   justify-content: center;
