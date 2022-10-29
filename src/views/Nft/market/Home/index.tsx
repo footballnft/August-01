@@ -16,7 +16,7 @@ import Newest from './Newest'
 import config from './config'
 
 const Gradient = styled(Box)`
-  background: ${({ theme }) => theme.colors.gradientCardHeader};
+  background: ${({ theme }) => theme.colors.gradients.cardHeader};
 `
 
 const StyledPageHeader = styled(PageHeader)`
