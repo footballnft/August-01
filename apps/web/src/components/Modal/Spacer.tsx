@@ -25,7 +25,7 @@ const Spacer: React.FC<React.PropsWithChildren<SpacerProps>> = ({ size = 'md' })
 }
 
 interface StyledSpacerProps {
-  size: string
+  size: number
 }
 
 const StyledSpacer = styled.div<StyledSpacerProps>`
