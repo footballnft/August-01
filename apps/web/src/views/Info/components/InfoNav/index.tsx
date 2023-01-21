@@ -23,7 +23,7 @@ import { useAccount } from 'wagmi'
 import { bsc, mainnet } from 'wagmi/chains'
 
 const NavWrapper = styled(Flex)`
-  background: ${({ theme }) => theme.colors.gradientCardHeader};
+  background: ${({ theme }) => theme.colors.gradients.cardHeader};
   justify-content: space-between;
   padding: 20px 16px;
   flex-direction: column;

@@ -20,7 +20,7 @@ export const getBorderBackground = (theme: DefaultTheme, status: Status) => {
   const gradientStopPoint = `calc(${HEADER_HEIGHT} + 1px)`
   switch (status) {
     case 'calculating':
-      return `linear-gradient(transparent ${gradientStopPoint}, ${theme.colors.cardBorder} ${gradientStopPoint}), ${theme.colors.gradientCardHeader}`
+      return `linear-gradient(transparent ${gradientStopPoint}, ${theme.colors.cardBorder} ${gradientStopPoint}), ${theme.colors.gradients.cardHeader}`
     case 'canceled':
       return `linear-gradient(${theme.colors.warning} ${gradientStopPoint}, ${theme.colors.cardBorder} ${gradientStopPoint})`
     case 'next':
@@ -35,7 +35,7 @@ export const getBorderBackground = (theme: DefaultTheme, status: Status) => {
 const getBackgroundColor = (theme: DefaultTheme, status: Status) => {
   switch (status) {
     case 'calculating':
-      return theme.colors.gradientCardHeader
+      return theme.colors.gradients.cardHeader
     case 'live':
       return 'transparent'
     case 'canceled':

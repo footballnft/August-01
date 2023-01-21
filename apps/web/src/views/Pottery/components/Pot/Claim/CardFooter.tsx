@@ -12,7 +12,7 @@ import { DeserializedPublicData, DeserializedPotteryUserData, PotteryDepositStat
 const Container = styled(Flex)`
   flex-direction: column;
   padding: 16px 24px;
-  background: ${({ theme }) => theme.colors.gradientCardHeader};
+  background: ${({ theme }) => theme.colors.gradients.cardHeader};
 `
 
 interface CardFooterProps {
