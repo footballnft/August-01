@@ -22,7 +22,7 @@ const RoiCardInner = styled(Box)`
   min-height: 120px;
   padding: 24px;
   border-radius: ${({ theme }) => theme.radii.default};
-  background: ${({ theme }) => theme.colors.gradientBubblegum};
+  background: ${({ theme }) => theme.colors.gradients.bubblegum};
 `;
 
 const RoiInputContainer = styled(Box)`

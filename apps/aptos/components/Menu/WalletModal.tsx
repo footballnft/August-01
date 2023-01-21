@@ -30,7 +30,7 @@ interface WalletModalProps extends InjectedModalProps {
 }
 
 const ModalHeader = styled(UIKitModalHeader)`
-  background: ${({ theme }) => theme.colors.gradientBubblegum};
+  background: ${({ theme }) => theme.colors.gradients.bubblegum};
 `
 
 const Tabs = styled.div`
