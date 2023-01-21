@@ -1,19 +1,28 @@
 import '@pancakeswap/ui/css/reset.css'
 import '../css/theme.css'
 
+import BigNumber from 'bignumber.js'
 import { PancakeTheme, ResetCSS, ToastListener } from '@pancakeswap/uikit'
+import { Analytics } from '@vercel/analytics/react'
 import { Menu } from 'components/Menu'
 import Providers from 'components/Providers'
 import { NextPage } from 'next'
 import { AppProps } from 'next/app'
 import Head from 'next/head'
 import Script from 'next/script'
+import GlobalStyle from 'style/Global'
 import { DefaultSeo } from 'next-seo'
 import { SEO } from 'next-seo.config'
 import { Fragment } from 'react'
 import ListsUpdater from 'state/lists/updater'
 import TransactionUpdater from 'state/transactions/updater'
 import { WrongNetworkModal } from 'components/WrongNetworkModal'
+
+// This config is required for number formatting
+BigNumber.config({
+  EXPONENTIAL_AT: 1000,
+  DECIMAL_PLACES: 80,
+})
 
 declare module 'styled-components' {
   /* eslint-disable @typescript-eslint/no-empty-interface */
@@ -47,10 +56,12 @@ function MyApp(props: AppProps) {
       <Providers>
         <GlobalHooks />
         <ResetCSS />
+        <GlobalStyle />
         <Updaters />
         <App {...props} />
         <ToastListener />
       </Providers>
+      <Analytics />
       {process.env.NEXT_PUBLIC_GA_TRACKING_ID && (
         <Script
           strategy="afterInteractive"

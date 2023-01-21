@@ -2,10 +2,9 @@ import { Coin, Currency, CurrencyAmount, Percent, Price } from '@pancakeswap/apt
 import { useTranslation } from '@pancakeswap/localization'
 import { AutoColumn, useModal } from '@pancakeswap/uikit'
 import { CommitButton } from 'components/CommitButton'
-import _noop from 'lodash/noop'
 import { useCallback, useContext } from 'react'
 import { useIsExpertMode } from 'state/user/expertMode'
-import useAddLiquidityHanlder from '../hooks/useAddLiquidityHandler'
+import useAddLiquidityHandler from '../hooks/useAddLiquidityHandler'
 import { CurrencySelectorContext } from '../hooks/useCurrencySelectRoute'
 import { Field } from '../type'
 import ConfirmAddLiquidityModal from './ConfirmAddLiquidityModal'
@@ -37,7 +36,7 @@ export default function AddLiquidityButton({
   const { t } = useTranslation()
   const currencies = useContext(CurrencySelectorContext)
 
-  const { onAdd, attemptingTxn, txHash, liquidityErrorMessage, setLiquidityState } = useAddLiquidityHanlder({
+  const { onAdd, attemptingTxn, txHash, liquidityErrorMessage, setLiquidityState } = useAddLiquidityHandler({
     parsedAmounts,
     noLiquidity,
   })
@@ -53,7 +52,7 @@ export default function AddLiquidityButton({
   const [onPresentAddLiquidityModal] = useModal(
     <ConfirmAddLiquidityModal
       parsedAmounts={parsedAmounts}
-      title={noLiquidity ? t('You are creating a pool') : t('You will receive')}
+      title={noLiquidity ? t('You are creating a trading pair') : t('You will receive')}
       customOnDismiss={handleDismissConfirmation}
       attemptingTxn={attemptingTxn}
       hash={txHash}

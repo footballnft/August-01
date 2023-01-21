@@ -2,6 +2,7 @@ import { useTranslation } from '@pancakeswap/localization'
 import { Flex, Skeleton, Text } from '@pancakeswap/uikit'
 import { ConnectWalletButton } from 'components/ConnectWalletButton'
 import styled from 'styled-components'
+import { FarmWithStakedValue } from '@pancakeswap/farms'
 import { HarvestActionContainer } from '../FarmTable/Actions/HarvestAction'
 import { StakedContainer } from '../FarmTable/Actions/StakedAction'
 import HarvestAction from './HarvestAction'
@@ -12,7 +13,7 @@ const Action = styled.div`
 `
 
 interface FarmCardActionsProps {
-  farm: any
+  farm: FarmWithStakedValue
   account?: string
   addLiquidityUrl?: string
   lpLabel?: string
@@ -27,7 +28,7 @@ const CardActions: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
   displayApr,
 }) => {
   const { t } = useTranslation()
-  const { pid } = farm
+  const { pid, lpAddress } = farm
   const { earnings } = farm.userData || {}
   const isReady = farm.multiplier !== undefined
 
@@ -41,12 +42,12 @@ const CardActions: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = ({
           {t('Earned')}
         </Text>
       </Flex>
-      <HarvestActionContainer earnings={earnings} pid={pid}>
+      <HarvestActionContainer earnings={earnings} pid={pid} lpAddress={lpAddress}>
         {(props) => <HarvestAction {...props} />}
       </HarvestActionContainer>
       {isReady ? (
         <Flex>
-          <Text bold textTransform="uppercase" color="secondary" fontSize="12px" pr="4px">
+          <Text bold color="secondary" fontSize="12px" pr="4px">
             {farm.lpSymbol}
           </Text>
           <Text bold textTransform="uppercase" color="textSubtle" fontSize="12px">

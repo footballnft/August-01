@@ -23,7 +23,9 @@ function useWarningTokens() {
 }
 
 export function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
-  const { chainId } = useActiveWeb3React()
+  const { chainId: activeChainId } = useActiveWeb3React()
+
+  const chainId = currencyA?.chainId || activeChainId
 
   const [tokenA, tokenB] = chainId ? [currencyA?.wrapped, currencyB?.wrapped] : [undefined, undefined]
 
@@ -94,7 +96,7 @@ export function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): P
   )
 }
 
-const MAX_HOPS = 3
+const MAX_HOPS = 4
 
 /**
  * Returns the best trade for the exact amount of tokens in to the given token out

@@ -2,15 +2,14 @@
 
 import { ChainId } from '@pancakeswap/aptos-swap-sdk'
 import { HexString } from 'aptos'
-import { TokenList } from '@uniswap/token-lists'
 import { DEFAULT_LIST_OF_LISTS, OFFICIAL_LISTS, WARNING_LIST_URLS } from 'config/constants/lists'
 import { atom, useAtomValue } from 'jotai'
 import fromPairs from 'lodash/fromPairs'
 import groupBy from 'lodash/groupBy'
-import { ListsState, TokenAddressMap as TTokenAddressMap } from '@pancakeswap/token-lists'
+import { TokenAddressMap as TTokenAddressMap, WrappedTokenInfo, TokenList } from '@pancakeswap/token-lists'
+import { ListsState } from '@pancakeswap/token-lists/react'
 import uniqBy from 'lodash/uniqBy'
 import { useMemo } from 'react'
-import { WrappedCoinInfo } from 'utils/WrappedCoinInfo'
 import { UNSUPPORTED_LIST_URLS } from '../../config/constants/lists'
 import DEFAULT_TOKEN_LIST from '../../config/constants/tokenLists/pancake-default.tokenlist.json'
 import UNSUPPORTED_TOKEN_LIST from '../../config/constants/tokenLists/pancake-unsupported.tokenlist.json'
@@ -124,14 +123,14 @@ export function listToTokenMap(list: TokenList): TokenAddressMap {
   const result = listCache?.get(list)
   if (result) return result
 
-  const tokenMap: WrappedCoinInfo[] = uniqBy(
+  const tokenMap: WrappedTokenInfo[] = uniqBy(
     list.tokens.map((token) => ({ ...token, address: new HexString(token.address).toShortString() })),
     (tokenInfo) => `${tokenInfo.chainId}#${tokenInfo.address}`,
   ).map((tokenInfo) => {
-    return new WrappedCoinInfo(tokenInfo)
+    return new WrappedTokenInfo(tokenInfo)
   })
 
-  const groupedTokenMap: { [chainId: string]: WrappedCoinInfo[] } = groupBy(tokenMap, (tokenInfo) => tokenInfo.chainId)
+  const groupedTokenMap: { [chainId: string]: WrappedTokenInfo[] } = groupBy(tokenMap, (tokenInfo) => tokenInfo.chainId)
 
   const tokenAddressMap = fromPairs(
     Object.entries(groupedTokenMap).map(([chainId, tokenInfoList]) => [

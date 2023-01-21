@@ -156,7 +156,6 @@ export const AddLiquidityModalHeader = ({
     t('Output is estimated. If the price changes by more than %slippage%% your transaction will revert.', {
       slippage: allowedSlippage / 100,
     }),
-    { placement: 'auto' },
   )
 
   return (
@@ -176,7 +175,7 @@ export const AddLiquidityModalHeader = ({
         </GreyCard>
       </AutoColumn>
       <RowBetween>
-        <Subtitle>{t('Your pool share')}</Subtitle>
+        <Subtitle>{t('Your share in the pair')}</Subtitle>
         <Text>{noLiquidity ? '100' : poolTokenPercentage?.toSignificant(4)}%</Text>
       </RowBetween>
       <AutoColumn gap="8px">{children}</AutoColumn>

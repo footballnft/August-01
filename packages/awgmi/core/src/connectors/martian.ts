@@ -1,7 +1,7 @@
 import { Types } from 'aptos'
 import { Chain } from '../chain'
 import { Connector } from './base'
-import { ConnectorNotFoundError } from '../errors'
+import { ConnectorNotFoundError, UserRejectedRequestError } from '../errors'
 import { Address } from '../types'
 import { SignMessagePayload, SignMessageResponse } from './types'
 
@@ -11,14 +11,27 @@ declare global {
   }
 }
 
-export class MartianConnector extends Connector<Window['martian']> {
-  readonly id = 'martian'
-  readonly name = 'Martain'
+export type MartianConnectorOptions = {
+  /** Id of connector */
+  id?: string
+  /** Name of connector */
+  name?: string
+}
+
+export class MartianConnector extends Connector<Window['martian'], MartianConnectorOptions> {
+  readonly id: string
+  readonly name: string
   provider?: Window['martian']
 
   readonly ready = typeof window !== 'undefined' && !!window.martian
-  constructor(config: { chains?: Chain[] } = {}) {
+  constructor(config: { chains?: Chain[]; options?: MartianConnectorOptions } = {}) {
     super(config)
+
+    let name = 'Martian'
+    const overrideName = config.options?.name
+    if (typeof overrideName === 'string') name = overrideName
+    this.id = config.options?.id || 'martian'
+    this.name = name
   }
 
   async getProvider() {
@@ -82,19 +95,34 @@ export class MartianConnector extends Connector<Window['martian']> {
     }
   }
 
-  async signAndSubmitTransaction(payload: Types.EntryFunctionPayload, options?: Types.SubmitTransactionRequest) {
+  async signAndSubmitTransaction(payload: Types.TransactionPayload, options?: Types.SubmitTransactionRequest) {
     const provider = await this.getProvider()
     const account = await this.account()
     if (!provider) throw new ConnectorNotFoundError()
 
-    await provider.cancelSubmittedTransactions()
+    try {
+      await provider.cancelSubmittedTransactions?.()
+    } catch {
+      //
+    }
 
-    const hash = await provider.generateSignAndSubmitTransaction(account?.address || '', payload, options)
+    const transaction = await provider.generateTransaction(account?.address || '', payload, options)
 
-    return { hash }
+    if (!transaction) throw new Error('Failed to generate transaction')
+
+    try {
+      const hash = await provider.signAndSubmitTransaction(transaction)
+
+      return { hash }
+    } catch (error) {
+      if (error === 'User Rejected the request') {
+        throw new UserRejectedRequestError(error)
+      }
+      throw error
+    }
   }
 
-  async signTransaction(payload: Types.EntryFunctionPayload) {
+  async signTransaction(payload: Types.TransactionPayload) {
     const provider = await this.getProvider()
     const account = await this.account()
     if (!provider) throw new ConnectorNotFoundError()

@@ -11,7 +11,7 @@ import TotalPurchased from './TotalPurchased'
 import TotalAvailableClaim from './TotalAvailableClaim'
 import ReleasedTokenInfo from './ReleasedTokenInfo'
 import IfoVestingFooter from './IfoVestingFooter'
-import ClaimButton from '../ClaimButton'
+import { ClaimButton } from '../ClaimButton'
 import VestingClaimButton from '../VestingClaimButton'
 
 interface IfoVestingCardProps {
@@ -31,14 +31,16 @@ const IfoVestingCard: React.FC<React.PropsWithChildren<IfoVestingCardProps>> = (
   const { token } = ifo
   const userPool = walletIfoData[poolId]
 
-  const { amountReleased, amountInVesting, amountAvailableToClaim, amountAlreadyClaimed } = useIfoVesting({
-    poolId,
-    publicIfoData,
-    walletIfoData,
-  })
+  const { amountReleased, amountInVesting, amountAvailableToClaim, amountAlreadyClaimed, totalPurchased } =
+    useIfoVesting({
+      poolId,
+      publicIfoData,
+      walletIfoData,
+    })
 
   const amountClaimed = useMemo(
-    () => (amountAlreadyClaimed.gt(0) ? getFullDisplayBalance(amountAlreadyClaimed, token.decimals, 4) : '0'),
+    () =>
+      amountAlreadyClaimed.gt(0) ? getFullDisplayBalance(amountAlreadyClaimed, token.decimals, token.decimals) : '0',
     [token, amountAlreadyClaimed],
   )
 
@@ -46,7 +48,7 @@ const IfoVestingCard: React.FC<React.PropsWithChildren<IfoVestingCardProps>> = (
     <Flex flexDirection="column">
       <Box>
         <ProgressStepper poolId={poolId} publicIfoData={publicIfoData} />
-        <TotalPurchased ifo={ifo} poolId={poolId} walletIfoData={walletIfoData} />
+        <TotalPurchased token={ifo.token} totalPurchased={totalPurchased} />
         <ReleasedTokenInfo ifo={ifo} amountReleased={amountReleased} amountInVesting={amountInVesting} />
         <Divider />
         <TotalAvailableClaim ifo={ifo} amountAvailableToClaim={amountAvailableToClaim} />
@@ -55,9 +57,10 @@ const IfoVestingCard: React.FC<React.PropsWithChildren<IfoVestingCardProps>> = (
         </Text>
         <Box mb="24px">
           {!userPool.isVestingInitialized ? (
-            <ClaimButton poolId={poolId} ifoVersion={ifo.version} walletIfoData={walletIfoData} />
+            <ClaimButton ifo={ifo} poolId={poolId} walletIfoData={walletIfoData} />
           ) : (
             <VestingClaimButton
+              ifo={ifo}
               poolId={poolId}
               amountAvailableToClaim={amountAvailableToClaim}
               walletIfoData={walletIfoData}

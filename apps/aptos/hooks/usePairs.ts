@@ -1,37 +1,22 @@
 /* eslint-disable camelcase */
-import { Currency, CurrencyAmount, Pair, PAIR_RESERVE_TYPE_TAG, SWAP_ADDRESS } from '@pancakeswap/aptos-swap-sdk'
-import { useAccountResources } from '@pancakeswap/awgmi'
+import { UseQueryResult } from '@tanstack/react-query'
+import { Currency, CurrencyAmount, Pair, SWAP_ADDRESS } from '@pancakeswap/aptos-swap-sdk'
+import { accountResourceQueryKey, useQueries } from '@pancakeswap/awgmi'
+import { fetchAccountResource } from '@pancakeswap/awgmi/core'
 import fromPairs from 'lodash/fromPairs'
 import { useMemo } from 'react'
 import { useCoins } from './Tokens'
+import { useActiveNetwork } from './useNetwork'
 
-const pairReserveSelector = (swapResources) => {
-  const allPairData = swapResources.filter((r) => r.type.includes(PAIR_RESERVE_TYPE_TAG)) as {
-    type: string
-    data: { reserve_x: string; reserve_y: string; block_timestamp_last: string }
-  }[]
-
-  return fromPairs(allPairData.map((p) => [p.type, p]))
-}
-
-// TODO: aptos this will fetch all lp reserve under swap resource account, will eventually be huge
-function useFetchAllPairsReserves() {
-  return useAccountResources({
-    address: SWAP_ADDRESS,
-    select: pairReserveSelector,
-    watch: true,
-  })
-}
-
-export function usePairsFromAddresses(addresses: string[]) {
-  const { data } = useFetchAllPairsReserves()
+export function usePairsFromAddresses(pairReservesAddresses: string[]) {
+  const pairReserves = usePairReservesQueries(pairReservesAddresses)
 
   const parsesAddress = useMemo(
     () =>
-      addresses.flatMap((addr) => {
+      pairReservesAddresses.flatMap((addr) => {
         return Pair.parseType(addr)
       }),
-    [addresses],
+    [pairReservesAddresses],
   )
 
   const coinsResults = useCoins(parsesAddress)
@@ -39,8 +24,8 @@ export function usePairsFromAddresses(addresses: string[]) {
   return useMemo(() => {
     const coins = coinsResults.map((coinResult) => coinResult.data)
 
-    return addresses.map((address) => {
-      if (data?.[address]) {
+    return pairReservesAddresses.map((address) => {
+      if (pairReserves?.[address]) {
         const [address0, address1] = Pair.parseType(address)
 
         const coin0 = coins?.find((c) => c?.address === address0)
@@ -50,8 +35,8 @@ export function usePairsFromAddresses(addresses: string[]) {
           return [
             PairState.EXISTS,
             new Pair(
-              CurrencyAmount.fromRawAmount(coin0, data[address].data.reserve_x),
-              CurrencyAmount.fromRawAmount(coin1, data[address].data.reserve_y),
+              CurrencyAmount.fromRawAmount(coin0, pairReserves[address].data.reserve_x),
+              CurrencyAmount.fromRawAmount(coin1, pairReserves[address].data.reserve_y),
             ),
           ]
         }
@@ -59,7 +44,7 @@ export function usePairsFromAddresses(addresses: string[]) {
       }
       return [PairState.NOT_EXISTS, null]
     })
-  }, [addresses, data, coinsResults])
+  }, [pairReservesAddresses, pairReserves, coinsResults])
 }
 
 export enum PairState {
@@ -69,31 +54,94 @@ export enum PairState {
   INVALID,
 }
 
-export function usePairs(currencies: [Currency | undefined, Currency | undefined][]): [PairState, Pair | null][] {
-  const { data } = useFetchAllPairsReserves()
+export function usePairReservesQueries(pairReservesAddresses: (string | undefined)[]) {
+  const { networkName } = useActiveNetwork()
 
+  const pairReservesQueries = useQueries({
+    queries: useMemo(
+      () =>
+        pairReservesAddresses.map((pairAddress) => ({
+          enable: Boolean(pairAddress),
+          queryFn: () => {
+            if (!pairAddress) throw new Error('No pair address')
+            return fetchAccountResource({ address: SWAP_ADDRESS, resourceType: pairAddress, networkName })
+          },
+          queryKey: accountResourceQueryKey({ address: SWAP_ADDRESS, resourceType: pairAddress, networkName }),
+          staleTime: Infinity,
+          refetchInterval: 3_000,
+        })),
+      [networkName, pairReservesAddresses],
+    ),
+  }) as UseQueryResult<{
+    type: string
+    data: { reserve_x: string; reserve_y: string; block_timestamp_last: string }
+  }>[]
+
+  const pairReserves = useMemo(
+    () =>
+      fromPairs(
+        pairReservesQueries
+          .filter((p) => Boolean(p.data))
+          .map(
+            (p) =>
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              [p.data!.type, p.data] as [
+                string,
+                {
+                  type: string
+                  data: {
+                    reserve_x: string
+                    reserve_y: string
+                    block_timestamp_last: string
+                  }
+                },
+              ],
+          ),
+      ),
+    [pairReservesQueries],
+  )
+
+  return pairReserves || {}
+}
+
+export function usePairs(currencies: [Currency | undefined, Currency | undefined][]): [PairState, Pair | null][] {
   const tokens = useMemo(() => currencies.map(([a, b]) => [a?.wrapped, b?.wrapped]), [currencies])
+  const pairAddresses = useMemo(
+    () => [
+      ...new Set(
+        tokens.map(([tokenA, tokenB]) => {
+          if (!tokenA || !tokenB || tokenA.equals(tokenB)) {
+            return undefined
+          }
+          return Pair.getReservesAddress(tokenA, tokenB)
+        }),
+      ),
+    ],
+    [tokens],
+  )
+
+  const pairReserves = usePairReservesQueries(pairAddresses)
 
   return useMemo(() => {
     return tokens.map(([tokenA, tokenB]) => {
       if (!tokenA || !tokenB || tokenA.equals(tokenB)) {
         return [PairState.INVALID, null]
       }
-      const pairAddress = Pair.getReservesAddress(tokenA, tokenB)
+      const pairReservesAddress = Pair.getReservesAddress(tokenA, tokenB)
 
-      if (data?.[pairAddress]) {
+      if (pairReserves?.[pairReservesAddress]) {
         const [token0, token1] = Pair.sortToken(tokenA, tokenB)
         return [
           PairState.EXISTS,
           new Pair(
-            CurrencyAmount.fromRawAmount(token0, data[pairAddress].data.reserve_x),
-            CurrencyAmount.fromRawAmount(token1, data[pairAddress].data.reserve_y),
+            CurrencyAmount.fromRawAmount(token0, pairReserves[pairReservesAddress].data.reserve_x),
+            CurrencyAmount.fromRawAmount(token1, pairReserves[pairReservesAddress].data.reserve_y),
           ),
         ]
       }
       return [PairState.NOT_EXISTS, null]
     })
-  }, [data, tokens])
+  }, [pairReserves, tokens])
 }
 
 export function usePair(tokenA?: Currency, tokenB?: Currency): [PairState, Pair | null] {

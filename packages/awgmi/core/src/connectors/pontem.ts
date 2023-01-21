@@ -1,6 +1,6 @@
 import { Types } from 'aptos'
 import { Chain } from '../chain'
-import { ConnectorNotFoundError } from '../errors'
+import { ConnectorNotFoundError, UserRejectedRequestError } from '../errors'
 import { Address } from '../types'
 import { Connector } from './base'
 import { SignMessagePayload, SignMessageResponse } from './types'
@@ -18,7 +18,7 @@ declare global {
       account(): Promise<Address>
       publicKey(): Promise<string>
       signAndSubmit(
-        transaction: Types.EntryFunctionPayload,
+        transaction: Types.TransactionPayload,
         options?: any,
       ): Promise<{
         success: boolean
@@ -27,7 +27,7 @@ declare global {
         }
       }>
       isConnected(): Promise<boolean>
-      signTransaction(transaction: Types.EntryFunctionPayload, options?: any): Promise<Uint8Array>
+      signTransaction(transaction: Types.TransactionPayload, options?: any): Promise<Uint8Array>
       signMessage(message: SignMessagePayload): Promise<{
         success: boolean
         result: SignMessageResponse
@@ -115,20 +115,27 @@ export class PontemConnector extends Connector<Window['pontem']> {
     }
   }
 
-  async signAndSubmitTransaction(payload: Types.EntryFunctionPayload) {
+  async signAndSubmitTransaction(payload: Types.TransactionPayload) {
     const provider = await this.getProvider()
     if (!provider) throw new ConnectorNotFoundError()
 
-    const response = await provider.signAndSubmit(payload)
+    let response
 
+    try {
+      response = await provider.signAndSubmit(payload)
+    } catch (error) {
+      if ((error as any)?.code === 1002) {
+        throw new UserRejectedRequestError(error)
+      }
+    }
     if (!response || !response.success) {
+      // TODO: unify WalletProviderError
       throw new Error('sign and submit failed')
     }
-
     return response.result
   }
 
-  async signTransaction(payload: Types.EntryFunctionPayload) {
+  async signTransaction(payload: Types.TransactionPayload) {
     const provider = await this.getProvider()
     if (!provider) throw new ConnectorNotFoundError()
     return provider.signTransaction(payload)

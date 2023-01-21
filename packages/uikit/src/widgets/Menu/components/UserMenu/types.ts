@@ -15,10 +15,12 @@ export interface UserMenuProps extends Omit<FlexProps, "children"> {
   account?: string;
   text?: ReactNode;
   avatarSrc?: string;
+  avatarClassName?: string;
   variant?: Variant;
   disabled?: boolean;
   children?: (exposedProps: { isOpen: boolean }) => ReactElement;
   placement?: Placement;
+  recalculatePopover?: boolean;
 }
 
 export interface UserMenuItemProps {

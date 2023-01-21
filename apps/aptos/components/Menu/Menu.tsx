@@ -10,6 +10,8 @@ import {
   NextLinkFromReactRouter,
   SwapFillIcon,
   SwapIcon,
+  DropdownMenuItemType,
+  footerLinks,
 } from '@pancakeswap/uikit'
 import { NetworkSwitcher } from 'components/NetworkSwitcher'
 import PhishingWarningBanner from 'components/PhishingWarningBanner'
@@ -19,7 +21,6 @@ import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
 import { ReactNode, useMemo } from 'react'
 import { usePhishingBanner } from 'state/user'
-import { footerLinks } from './footerConfig'
 import { SettingsButton } from './Settings/SettingsButton'
 import UserMenu from './UserMenu'
 
@@ -45,12 +46,16 @@ const config: (t: ContextApi['t']) => ConfigMenuItemsType[] = (t) => [
         label: t('Liquidity'),
         href: '/liquidity',
       },
+      {
+        label: t('Bridge'),
+        href: 'https://bridge.pancakeswap.finance/aptos',
+        type: DropdownMenuItemType.EXTERNAL_LINK,
+      },
     ],
   },
   {
     label: t('Earn'),
     href: '/farms',
-    disabled: true,
     icon: EarnIcon,
     fillIcon: EarnFillIcon,
     image: '/images/decorations/pe2.png',
@@ -58,14 +63,10 @@ const config: (t: ContextApi['t']) => ConfigMenuItemsType[] = (t) => [
       {
         label: t('Farms'),
         href: '/farms',
-        status: { text: t('Soon'), color: 'warning' },
-        disabled: true,
       },
       {
         label: t('Pools'),
         href: '/pools',
-        status: { text: t('Soon'), color: 'warning' },
-        disabled: true,
       },
     ],
   },
@@ -157,6 +158,7 @@ export const Menu = ({ children }: { children: ReactNode }) => {
       activeSubItem={activeSubMenuItem?.href}
       toggleTheme={toggleTheme}
       buyCakeLabel={t('Buy CAKE')}
+      buyCakeLink="https://aptos.pancakeswap.finance/swap?outputCurrency=0x159df6b7689437016108a019fd5bef736bac692b6d4a1f10c941f6fbb9a74ca6::oft::CakeOFT"
     >
       {children}
     </UIMenu>

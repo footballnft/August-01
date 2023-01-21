@@ -6,7 +6,6 @@ import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent,
 } from 'components/TransactionConfirmationModal'
-import _toNumber from 'lodash/toNumber'
 import formatAmountDisplay from 'utils/formatAmountDisplay'
 import { AddLiquidityModalHeader, PairDistribution } from './common'
 import { CurrencySelectorValue } from '../hooks/useCurrencySelectRoute'
@@ -80,7 +79,7 @@ const ConfirmAddLiquidityModal: React.FC<
   const modalBottom = useCallback(() => {
     return (
       <Button width="100%" onClick={onAdd} mt="20px">
-        {noLiquidity ? t('Create Pool & Supply') : t('Confirm Supply')}
+        {noLiquidity ? t('Create Pair & Supply') : t('Confirm Supply')}
       </Button>
     )
   }, [noLiquidity, onAdd, t])

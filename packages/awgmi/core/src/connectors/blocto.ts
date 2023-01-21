@@ -1,7 +1,12 @@
 import type { AptosProviderInterface, AptosProviderConfig } from '@blocto/sdk'
 import { Types } from 'aptos'
 import { Chain } from '../chain'
-import { ChainNotConfiguredError, ConnectorNotFoundError, ConnectorUnauthorizedError } from '../errors'
+import {
+  ChainNotConfiguredError,
+  ConnectorNotFoundError,
+  ConnectorUnauthorizedError,
+  UserRejectedRequestError,
+} from '../errors'
 import { Address } from '../types'
 import { Connector, ConnectorData, ConnectorTransactionResponse } from './base'
 import { Account, SignMessagePayload, SignMessageResponse } from './types'
@@ -17,7 +22,7 @@ const networkMapping: Record<string, number> = {
   testnet: 2,
 }
 
-export class BloctoConnector extends Connector<AptosProviderInterface, AptosProviderConfig> {
+export class BloctoConnector extends Connector<AptosProviderInterface, Partial<AptosProviderConfig>> {
   readonly id = 'blocto'
   readonly name = 'Blocto'
 
@@ -25,7 +30,7 @@ export class BloctoConnector extends Connector<AptosProviderInterface, AptosProv
 
   ready = typeof window !== 'undefined' && (window as any)?.bloctoAptos
 
-  constructor(config: { chains?: Chain[]; options?: AptosProviderConfig } = {}) {
+  constructor(config: { chains?: Chain[]; options?: Partial<AptosProviderConfig> } = {}) {
     super(config)
   }
 
@@ -84,13 +89,22 @@ export class BloctoConnector extends Connector<AptosProviderInterface, AptosProv
     }
   }
 
-  async signAndSubmitTransaction(transaction?: Types.EntryFunctionPayload): Promise<ConnectorTransactionResponse> {
+  async signAndSubmitTransaction(transaction?: Types.TransactionPayload): Promise<ConnectorTransactionResponse> {
     const provider = await this.getProvider()
     if (!provider) throw new ConnectorNotFoundError()
-    return provider.signAndSubmitTransaction(transaction)
+    try {
+      const response = await provider.signAndSubmitTransaction(transaction)
+      return response
+    } catch (error) {
+      if ((error as any)?.message === 'User declined to send the transaction') {
+        throw new UserRejectedRequestError(error)
+      } else {
+        throw error
+      }
+    }
   }
 
-  async signTransaction(transaction?: Types.EntryFunctionPayload): Promise<Uint8Array> {
+  async signTransaction(transaction?: Types.TransactionPayload): Promise<Uint8Array> {
     const provider = await this.getProvider()
     if (!provider) throw new ConnectorNotFoundError()
     return provider.signTransaction(transaction)

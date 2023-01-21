@@ -1,4 +1,5 @@
 import React from "react";
+import { Flex, Text } from "@pancakeswap/uikit";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { useTranslation } from "@pancakeswap/localization";
@@ -10,11 +11,6 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-
-  a {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
 
   ${({ theme }) => theme.mediaQueries.sm} {
     margin-left: 16px;
@@ -50,16 +46,21 @@ export const FarmTabButtons: React.FC<React.PropsWithChildren<FarmTabButtonsProp
 
   return (
     <Wrapper>
-      <ButtonMenu activeIndex={activeIndex} scale="sm" variant="subtle">
-        <ButtonMenuItem as={NextLinkFromReactRouter} to="/farms">
-          {t("Live")}
-        </ButtonMenuItem>
-        <NotificationDot show={hasStakeInFinishedFarms}>
-          <ButtonMenuItem as={NextLinkFromReactRouter} to="/farms/history" id="finished-farms-button">
-            {t("Finished")}
+      <Flex width="max-content" flexDirection="column">
+        <Text textTransform="uppercase" color="textSubtle" fontSize="12px" bold>
+          {t("Filter by")}
+        </Text>
+        <ButtonMenu activeIndex={activeIndex} scale="sm" variant="subtle">
+          <ButtonMenuItem as={NextLinkFromReactRouter} to="/farms">
+            {t("Live")}
           </ButtonMenuItem>
-        </NotificationDot>
-      </ButtonMenu>
+          <NotificationDot show={hasStakeInFinishedFarms}>
+            <ButtonMenuItem as={NextLinkFromReactRouter} to="/farms/history" id="finished-farms-button">
+              {t("Finished")}
+            </ButtonMenuItem>
+          </NotificationDot>
+        </ButtonMenu>
+      </Flex>
     </Wrapper>
   );
 };

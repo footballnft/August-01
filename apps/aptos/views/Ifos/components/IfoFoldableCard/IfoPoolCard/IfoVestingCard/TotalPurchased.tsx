@@ -1,21 +1,18 @@
-import { Flex, Box, Text, BalanceWithLoading } from '@pancakeswap/uikit'
+import { Flex, Box, Text } from '@pancakeswap/uikit'
 import { LightGreyCard } from 'components/Card'
 import { TokenImage } from 'components/TokenImage'
-import { Ifo, PoolIds } from 'config/constants/types'
-import { WalletIfoData } from 'views/Ifos/types'
-import { getBalanceNumber } from '@pancakeswap/utils/formatBalance'
+import { getFullDisplayBalance } from '@pancakeswap/utils/formatBalance'
 import { useTranslation } from '@pancakeswap/localization'
+import BigNumber from 'bignumber.js'
+import { Currency } from '@pancakeswap/aptos-swap-sdk'
 
 interface TotalPurchasedProps {
-  ifo: Ifo
-  poolId: PoolIds
-  walletIfoData: WalletIfoData
+  token: Currency
+  totalPurchased: BigNumber
 }
 
-const TotalPurchased: React.FC<React.PropsWithChildren<TotalPurchasedProps>> = ({ ifo, poolId, walletIfoData }) => {
+const TotalPurchased: React.FC<React.PropsWithChildren<TotalPurchasedProps>> = ({ token, totalPurchased }) => {
   const { t } = useTranslation()
-  const { token } = ifo
-  const { offeringAmountInToken } = walletIfoData[poolId]
 
   return (
     <LightGreyCard mt="24px" mb="24px">
@@ -25,13 +22,9 @@ const TotalPurchased: React.FC<React.PropsWithChildren<TotalPurchasedProps>> = (
           <Text color="secondary" bold fontSize="12px">
             {t('Total %symbol% purchased', { symbol: token.symbol })}
           </Text>
-          <BalanceWithLoading
-            bold
-            prefix="~"
-            decimals={4}
-            fontSize="20px"
-            value={getBalanceNumber(offeringAmountInToken, token.decimals)}
-          />
+          <Text as="span" bold fontSize="20px">
+            ~{getFullDisplayBalance(totalPurchased, token.decimals, token.decimals)}
+          </Text>
         </Box>
       </Flex>
     </LightGreyCard>

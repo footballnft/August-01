@@ -2,10 +2,12 @@ import { useNetwork } from '@pancakeswap/awgmi'
 import { useIsMounted } from '@pancakeswap/hooks'
 import { useTranslation } from '@pancakeswap/localization'
 import { Box, Text, UserMenu, UserMenuDivider, UserMenuItem } from '@pancakeswap/uikit'
+import { ChainIdName } from 'config/ChainName'
 
 import { APEX_DOMAIN } from 'config'
 import { defaultChain } from 'config/chains'
-import Image from 'next/future/image'
+import Image from 'next/image'
+import { aptosLogoClass } from './Logo/CurrencyLogo.css'
 
 const evmChains = [
   { id: 56, name: 'BNB Smart Chain' },
@@ -27,7 +29,7 @@ const NetworkSelect = () => {
           style={{ justifyContent: 'flex-start' }}
           as="a"
           target="_blank"
-          href={`${APEX_DOMAIN}?chainId=${chain.id}`}
+          href={`${APEX_DOMAIN}?chain=${ChainIdName[chain.id]}`}
         >
           <Image
             src={`${APEX_DOMAIN}/images/chains/${chain.id}.png`}
@@ -56,7 +58,8 @@ export const NetworkSwitcher = () => {
     <UserMenu
       mr="8px"
       variant="default"
-      avatarSrc="/images/apt.png"
+      avatarSrc="https://tokens.pancakeswap.finance/images/symbol/apt.png"
+      avatarClassName={aptosLogoClass}
       placement="bottom"
       text={
         <>

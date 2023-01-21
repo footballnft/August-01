@@ -1,9 +1,14 @@
 import { useCallback } from 'react'
+import { masterchefDeposit } from 'config/constants/contracts/masterchef'
+import useSimulationAndSendTransaction from 'hooks/useSimulationAndSendTransaction'
 
-const useHarvestFarm = (_farmPid: number) => {
+const useHarvestFarm = (tokenType: string) => {
+  const executeTransaction = useSimulationAndSendTransaction()
+
   const handleHarvest = useCallback(async () => {
-    return null
-  }, [])
+    const payload = masterchefDeposit(['0'], [tokenType])
+    return executeTransaction(payload)
+  }, [executeTransaction, tokenType])
 
   return { onReward: handleHarvest }
 }

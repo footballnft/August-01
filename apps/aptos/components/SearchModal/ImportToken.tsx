@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Token, Currency } from '@pancakeswap/aptos-swap-sdk'
 import { Button, Text, ErrorIcon, Flex, Message, Checkbox, Link, Tag, Grid, AutoColumn } from '@pancakeswap/uikit'
-// import { useAddUserToken } from 'state/user/hooks'
 import { getBlockExploreLink } from 'utils'
 import truncateHash from '@pancakeswap/utils/truncateHash'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -9,6 +8,7 @@ import { useCombinedInactiveList } from 'state/lists/hooks'
 import { ListLogo } from 'components/Logo'
 import { useTranslation } from '@pancakeswap/localization'
 import { useAddUserToken } from 'state/user'
+import { WrappedTokenInfo } from '@pancakeswap/token-lists'
 
 interface ImportProps {
   tokens: Token[]
@@ -32,15 +32,11 @@ function ImportToken({ tokens, handleCurrencySelect }: ImportProps) {
       <Message variant="warning">
         <Text>
           {t(
-            'Anyone can create a %standard% token on %network% with any name, including creating fake versions of existing tokens and tokens that claim to represent projects that do not have a token.',
-            {
-              standard: 'Aptos coin',
-              network: 'Aptos',
-            },
+            'Anyone can create a coin on Aptos with any name, including fake versions of existing coins or ones that claim to represent projects that do not have a coin.',
           )}
           <br />
           <br />
-          {t('If you purchase an arbitrary token, you may be unable to sell it back.')}
+          <strong>{t('If you purchase a fraudulent coin, you may be exposed to permanent loss of funds.')}</strong>
         </Text>
       </Message>
 
@@ -100,7 +96,18 @@ function ImportToken({ tokens, handleCurrencySelect }: ImportProps) {
           variant="danger"
           disabled={!confirmed}
           onClick={() => {
-            tokens.forEach((token) => addToken(token))
+            tokens.forEach((token) => {
+              const inactiveToken = chainId && inactiveTokenList?.[token.chainId]?.[token.address]
+              let tokenToAdd = token
+              if (inactiveToken) {
+                tokenToAdd = new WrappedTokenInfo({
+                  ...token,
+                  logoURI: inactiveToken.token.logoURI,
+                  name: token.name || inactiveToken.token.name,
+                })
+              }
+              addToken(tokenToAdd)
+            })
             if (handleCurrencySelect) {
               handleCurrencySelect(tokens[0])
             }

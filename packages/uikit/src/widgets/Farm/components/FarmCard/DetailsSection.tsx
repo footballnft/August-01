@@ -1,9 +1,9 @@
-import styled from "styled-components";
 import { useTranslation } from "@pancakeswap/localization";
-import { Text } from "../../../../components/Text";
+import styled from "styled-components";
 import { Flex } from "../../../../components/Box";
-import { Skeleton } from "../../../../components/Skeleton";
 import { LinkExternal } from "../../../../components/Link";
+import { Skeleton } from "../../../../components/Skeleton";
+import { Text } from "../../../../components/Text";
 
 export interface ExpandableSectionProps {
   scanAddressLink?: string;
@@ -60,8 +60,12 @@ export const DetailsSection: React.FC<React.PropsWithChildren<ExpandableSectionP
       {!removed && (
         <StyledLinkExternal href={addLiquidityUrl}>{t("Get %symbol%", { symbol: lpLabel })}</StyledLinkExternal>
       )}
-      <StyledLinkExternal href={scanAddressLink}>{t("View Contract")}</StyledLinkExternal>
-      <StyledLinkExternal href={infoAddress}>{t("See Pair Info")}</StyledLinkExternal>
+      {scanAddressLink && (
+        <StyledLinkExternal isBscScan href={scanAddressLink}>
+          {t("View Contract")}
+        </StyledLinkExternal>
+      )}
+      {infoAddress && <StyledLinkExternal href={infoAddress}>{t("See Pair Info")}</StyledLinkExternal>}
     </Wrapper>
   );
 };

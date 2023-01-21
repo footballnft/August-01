@@ -14,15 +14,21 @@ import {
   RowBetween,
   RowFixed,
 } from '@pancakeswap/uikit'
-import { TokenList, Version } from '@uniswap/token-lists'
+import { TokenList, Version } from '@pancakeswap/token-lists'
 import Card from 'components/Card'
 import { UNSUPPORTED_LIST_URLS } from 'config/constants/lists'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useAtomValue } from 'jotai'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { listsAtom, useListState } from 'state/lists'
+import { useListState } from 'state/lists'
 import styled from 'styled-components'
-import { useFetchListCallback, acceptListUpdate, disableList, enableList, removeList } from '@pancakeswap/token-lists'
+import {
+  useFetchListCallback,
+  acceptListUpdate,
+  disableList,
+  enableList,
+  removeList,
+} from '@pancakeswap/token-lists/react'
 import uriToHttp from '@pancakeswap/utils/uriToHttp'
 
 import { selectorByUrlsAtom, useActiveListUrls, useAllLists, useIsListActive } from 'state/lists/hooks'
@@ -93,7 +99,7 @@ const ListRow = memo(function ListRow({ listUrl }: { listUrl: string }) {
   const { targetRef, tooltip, tooltipVisible } = useTooltip(
     <div>
       <Text>{list && listVersionLabel(list.version)}</Text>
-      <LinkExternal external href={`https://tokenlists.org/token-list?url=${listUrl}`}>
+      <LinkExternal external href={listUrl}>
         {t('See')}
       </LinkExternal>
       <Button variant="danger" scale="xs" onClick={handleRemoveList} disabled={Object.keys(listsByUrl).length === 1}>
@@ -170,6 +176,7 @@ function ManageLists({
   const { t } = useTranslation()
 
   const lists = useAllLists()
+  const [, dispatch] = useListState()
 
   // sort by active but only if not visible
   const activeListUrls = useActiveListUrls()
@@ -184,7 +191,7 @@ function ManageLists({
     setListUrlInput(e.target.value)
   }, [])
 
-  const fetchList = useFetchListCallback(listsAtom)
+  const fetchList = useFetchListCallback(dispatch)
 
   const validUrl: boolean = useMemo(() => {
     return uriToHttp(listUrlInput).length > 0

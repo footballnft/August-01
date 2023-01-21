@@ -1,24 +1,23 @@
-import { Router, Currency, CurrencyAmount } from '@pancakeswap/aptos-swap-sdk'
+import { Currency, CurrencyAmount, Router } from '@pancakeswap/aptos-swap-sdk'
 import { SimulateTransactionError, UserRejectedRequestError } from '@pancakeswap/awgmi/core'
-
-import { useCallback, useContext, useMemo, useState } from 'react'
 import { useTranslation } from '@pancakeswap/localization'
+import { log } from 'next-axiom'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
-import { useSendTransaction, useSimulateTransaction } from '@pancakeswap/awgmi'
-
+import useSimulationAndSendTransaction from 'hooks/useSimulationAndSendTransaction'
 import { useTransactionAdder } from 'state/transactions/hooks'
-import { calculateSlippageAmount } from 'utils/exchange'
 import { useUserSlippage } from 'state/user'
+import { calculateSlippageAmount } from 'utils/exchange'
 import { transactionErrorToUserReadableMessage } from 'utils/transactionErrorToUserReadableMessage'
 
-import { CurrencySelectorContext } from './useCurrencySelectRoute'
 import { Field, LiquidityHandlerReturn } from '../type'
+import { CurrencySelectorContext } from './useCurrencySelectRoute'
 
 interface UseAddLiquidityHandlerReturn extends LiquidityHandlerReturn {
   onAdd: () => void
 }
 
-export default function useAddLiquidityHanlder({
+export default function useAddLiquidityHandler({
   parsedAmounts,
   noLiquidity,
 }: {
@@ -28,9 +27,9 @@ export default function useAddLiquidityHanlder({
   const { currencyA, currencyB } = useContext(CurrencySelectorContext)
   const { t } = useTranslation()
   const addTransaction = useTransactionAdder()
-  const { simulateTransactionAsync } = useSimulateTransaction()
-  const { sendTransactionAsync } = useSendTransaction()
+
   const [allowedSlippage] = useUserSlippage() // custom from users
+  const executeTransaction = useSimulationAndSendTransaction()
 
   const [{ attemptingTxn, liquidityErrorMessage, txHash }, setLiquidityState] = useState<{
     attemptingTxn: boolean
@@ -66,18 +65,17 @@ export default function useAddLiquidityHanlder({
       currencyA.wrapped.address,
       currencyB.wrapped.address,
     )
-    console.info(payload, 'payload')
 
-    // eslint-disable-next-line consistent-return
-    return simulateTransactionAsync({ payload })
-      .then((results) => {
-        const result = Array.isArray(results) ? results[0] : { max_gas_amount: '0' }
-
-        return sendTransactionAsync({
-          payload,
-          options: { max_gas_amount: result.max_gas_amount },
+    executeTransaction(payload, (error) => {
+      log.error('Add Liquidity Simulation Error', { error, payload })
+      if (error instanceof SimulateTransactionError) {
+        setLiquidityState({
+          attemptingTxn: false,
+          liquidityErrorMessage: transactionErrorToUserReadableMessage(error),
+          txHash: undefined,
         })
-      })
+      }
+    })
       .then((response) => {
         setLiquidityState({ attemptingTxn: false, liquidityErrorMessage: undefined, txHash: response.hash })
         const symbolA = currencyA.symbol
@@ -94,11 +92,12 @@ export default function useAddLiquidityHanlder({
         })
       })
       .catch((err) => {
+        log.error('Add Liquidity Error', { error: err, payload })
         console.error(`Add Liquidity failed`, { err }, payload)
 
         let errorMsg = ''
 
-        if (err instanceof UserRejectedRequestError || err instanceof SimulateTransactionError) {
+        if (!(err instanceof UserRejectedRequestError)) {
           errorMsg = t('Add liquidity failed: %message%', {
             message: transactionErrorToUserReadableMessage(err),
           })
@@ -111,16 +110,15 @@ export default function useAddLiquidityHanlder({
         })
       })
   }, [
-    addTransaction,
     currencyA,
     currencyB,
-    parsedAmounts,
-    sendTransactionAsync,
-    simulateTransactionAsync,
-    t,
+    parsedAAmount?.quotient,
+    parsedBAmount?.quotient,
     amountsMin,
-    parsedAAmount,
-    parsedBAmount,
+    executeTransaction,
+    parsedAmounts,
+    addTransaction,
+    t,
   ])
 
   return useMemo(

@@ -1,11 +1,9 @@
-import { TransactionResponse } from '@pancakeswap/awgmi/core'
-// import { useTranslation } from '@pancakeswap/localization'
-// import { useToast } from '@pancakeswap/uikit'
+import { TransactionResponse, UserRejectedRequestError } from '@pancakeswap/awgmi/core'
+import { useTranslation } from '@pancakeswap/localization'
+import { useToast } from '@pancakeswap/uikit'
 import { useCallback, useState } from 'react'
-// import { ToastDescriptionWithTx } from 'components/Toast'
-import { TransactionReceipt } from 'state/transactions/actions'
-
-// import useActiveWeb3React from './useActiveWeb3React'
+import { ToastDescriptionWithTx } from 'components/Toast'
+import { transactionErrorToUserReadableMessage } from 'utils/transactionErrorToUserReadableMessage'
 
 export type TxResponse = TransactionResponse | null
 
@@ -14,23 +12,27 @@ export type CatchTxErrorReturn = {
   loading: boolean
 }
 
-type ErrorData = {
-  code: number
-  message: string
+interface TransactionReceipt {
+  status: boolean
+  transactionHash: string
 }
 
-type TxError = {
-  data: ErrorData
-  error: string
-}
+// type ErrorData = {
+//   code: number
+//   message: string
+// }
+
+// type TxError = {
+//   data: ErrorData
+//   error: string
+// }
 
 // -32000 is insufficient funds for gas * price + value
 // const isGasEstimationError = (err: TxError): boolean => err?.data?.code === -32000
 
 export default function useCatchTxError(): CatchTxErrorReturn {
-  // const { provider } = useActiveWeb3React()
-  // const { t } = useTranslation()
-  // const { toastError, toastSuccess } = useToast()
+  const { t } = useTranslation()
+  const { toastError, toastSuccess } = useToast()
   const [loading, setLoading] = useState(false)
 
   // const handleNormalError = useCallback(
@@ -53,22 +55,42 @@ export default function useCatchTxError(): CatchTxErrorReturn {
 
   const fetchWithCatchTxError = useCallback(
     async (_callTx: () => Promise<TxResponse>): Promise<TransactionReceipt | null> => {
-      // let tx: TxResponse = null
+      let tx: TxResponse = null
 
       try {
-        // TODO: Aptos
-        const receipt = {} as TransactionReceipt
-        return receipt
+        setLoading(true)
+
+        tx = await _callTx()
+
+        if (tx?.hash) {
+          toastSuccess(`${t('Transaction Submitted')}!`, <ToastDescriptionWithTx txHash={tx.hash} />)
+        }
+
+        const receipt = await tx?.wait()
+
+        if (receipt) {
+          return {
+            // @ts-ignore
+            status: receipt?.success,
+            transactionHash: receipt.hash,
+          }
+        }
+        return null
       } catch (error: any) {
-        setLoading(false) // TODO: Aptos. Temporary to fix lint error.
+        setLoading(false)
+
+        if (!(error instanceof UserRejectedRequestError)) {
+          const reason = transactionErrorToUserReadableMessage(error)
+          const errorMessage = reason ? t('Transaction failed with error: %reason%', { reason }) : ''
+          toastError(`${t('Failed')}!`, errorMessage)
+        }
       } finally {
         setLoading(false)
       }
 
       return null
     },
-    [],
-    // [handleNormalError, toastError, provider, toastSuccess, t],
+    [t, toastSuccess, toastError],
   )
 
   return {

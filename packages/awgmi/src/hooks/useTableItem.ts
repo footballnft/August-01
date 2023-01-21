@@ -1,20 +1,13 @@
 /* eslint-disable camelcase */
-import { getProvider } from '@pancakeswap/awgmi/core'
+import { FetchTableItemArgs, fetchTableItem } from '@pancakeswap/awgmi/core'
+import { useQueries } from '@tanstack/react-query'
 import { Types } from 'aptos'
+import { useMemo } from 'react'
+import { queryClientContext } from '../context'
 
 import { QueryConfig, QueryFunctionArgs } from '../types'
 import { useNetwork } from './useNetwork'
 import { useQuery } from './utils/useQuery'
-
-export type FetchTableItemArgs = {
-  networkName?: string
-  handle: string
-  data: {
-    key: Types.TableItemRequest['key']
-    keyType: Types.TableItemRequest['key_type']
-    valueType: Types.TableItemRequest['value_type']
-  }
-}
 
 export type FetchTableItemResult = Types.MoveResource[]
 
@@ -26,11 +19,41 @@ export const queryKey = (params: { networkName?: string } & Partial<FetchTableIt
 const queryFn = ({ queryKey: [{ networkName, handle, data }] }: QueryFunctionArgs<typeof queryKey>) => {
   if (!handle || !data) throw new Error('Handle and data are required.')
 
-  const provider = getProvider({ networkName })
-  return provider.getTableItem(handle, {
-    key_type: data.keyType,
-    value_type: data.valueType,
-    key: data.key,
+  return fetchTableItem({ networkName, handle, data })
+}
+
+export type PayloadTableItem = {
+  keyType: string
+  valueType: string
+  key: any
+}
+
+export function useTableItems({
+  handles,
+  data: data_,
+  networkName: networkName_,
+}: {
+  handles?: string[]
+  data?: PayloadTableItem[]
+  networkName?: string
+}) {
+  const { chain } = useNetwork()
+
+  return useQueries({
+    context: queryClientContext,
+    queries: useMemo(
+      () =>
+        handles?.length && data_?.length
+          ? handles.map((handle, idx) => ({
+              handle,
+              queryFn,
+              queryKey: queryKey({ networkName: networkName_ ?? chain?.network, handle, data: data_[idx] }),
+              staleTime: Infinity,
+              refetchInterval: 3_000,
+            }))
+          : [],
+      [chain?.network, handles, networkName_, data_],
+    ),
   })
 }
 
@@ -62,7 +85,7 @@ export function useTableItem<TData = unknown>({
     keepPreviousData,
     refetchInterval: (data) => {
       if (!data) return 6_000
-      return 0
+      return 3_000
     },
   })
 }

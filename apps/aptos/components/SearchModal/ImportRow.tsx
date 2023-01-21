@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react'
-import { Token } from '@pancakeswap/aptos-swap-sdk'
+import { Currency, Token } from '@pancakeswap/aptos-swap-sdk'
 import {
   Button,
   Text,
@@ -8,6 +8,7 @@ import {
   AutoRow,
   RowFixed,
   AutoColumn,
+  Flex,
 } from '@pancakeswap/uikit'
 import { CurrencyLogo } from 'components/Logo/CurrencyLogo'
 import { ListLogo } from 'components/Logo'
@@ -16,6 +17,7 @@ import { useCombinedInactiveList } from 'state/lists/hooks'
 import styled from 'styled-components'
 import { useIsUserAddedToken, useIsTokenActive } from 'hooks/Tokens'
 import { useTranslation } from '@pancakeswap/localization'
+import { APTOS_COIN } from '@pancakeswap/awgmi'
 
 const TokenSection = styled.div<{ dim?: boolean }>`
   padding: 4px 20px;
@@ -51,12 +53,14 @@ export default function ImportRow({
   token,
   style,
   dim,
+  onCurrencySelect,
   showImportView,
   setImportToken,
 }: {
   token: Token
   style?: CSSProperties
   dim?: boolean
+  onCurrencySelect?: (currency: Currency) => void
   showImportView: () => void
   setImportToken: (token: Token) => void
 }) {
@@ -72,17 +76,36 @@ export default function ImportRow({
 
   // check if already active on list or local storage tokens
   const isAdded = useIsUserAddedToken(token)
-  const isActive = useIsTokenActive(token)
+  const isActive = useIsTokenActive(token) || token.address === APTOS_COIN
 
   return (
-    <TokenSection style={style}>
+    <TokenSection
+      style={style}
+      variant="text"
+      as={isActive && onCurrencySelect ? Button : 'a'}
+      onClick={() => {
+        if (isActive) {
+          onCurrencySelect?.(token)
+        }
+      }}
+    >
       <CurrencyLogo currency={token} size={isMobile ? '20px' : '24px'} style={{ opacity: dim ? '0.6' : '1' }} />
       <AutoColumn gap="4px" style={{ opacity: dim ? '0.6' : '1' }}>
         <AutoRow>
-          <Text mr="8px">{token.symbol}</Text>
-          <Text color="textDisabled">
-            <NameOverflow title={token.name}>{token.name}</NameOverflow>
-          </Text>
+          <Flex
+            alignItems={isMobile && token.symbol.length > 14 ? undefined : 'center'}
+            flexDirection={isMobile && token.symbol.length > 14 ? 'column' : 'row'}
+          >
+            <Text mr="8px">{token.symbol}</Text>
+            <Text color="textDisabled">
+              <NameOverflow
+                style={!isMobile && token.symbol.length > 14 ? { maxWidth: '58px' } : {}}
+                title={token.name}
+              >
+                {token.name}
+              </NameOverflow>
+            </Text>
+          </Flex>
         </AutoRow>
         {list && list.logoURI && (
           <RowFixed>

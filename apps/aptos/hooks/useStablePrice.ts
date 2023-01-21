@@ -1,8 +1,12 @@
-import { Currency, JSBI, Price } from '@pancakeswap/aptos-swap-sdk'
-import { USDC } from 'config/coins'
+import { Currency, JSBI, Price, Trade } from '@pancakeswap/aptos-swap-sdk'
+import { L0_USDC, CAKE } from 'config/coins'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useMemo } from 'react'
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
+import BigNumber from 'bignumber.js'
+import { useAllCommonPairs } from 'hooks/Trades'
+import tryParseAmount from '@pancakeswap/utils/tryParseAmount'
+import { BIG_ZERO } from '@pancakeswap/utils/bigNumber'
 import useNativeCurrency from './useNativeCurrency'
 import { PairState, usePairs } from './usePairs'
 
@@ -11,11 +15,14 @@ import { PairState, usePairs } from './usePairs'
  * @param currency currency to compute the stable price of
  */
 export default function useStablePrice(currency?: Currency): Price<Currency, Currency> | undefined {
-  const { chainId } = useActiveWeb3React()
-  const native = useNativeCurrency()
+  const { chainId: webChainId } = useActiveWeb3React()
+
+  const chainId = currency?.chainId || webChainId
+
+  const native = useNativeCurrency(chainId)
   const wrapped = currency?.wrapped
   const wnative = native.wrapped
-  const stable = USDC[chainId]
+  const stable = L0_USDC[chainId]
 
   const tokenPairs: [Currency | undefined, Currency | undefined][] = useMemo(
     () => [
@@ -25,6 +32,7 @@ export default function useStablePrice(currency?: Currency): Price<Currency, Cur
     ],
     [wnative, stable, chainId, currency, wrapped],
   )
+
   const [[nativePairState, nativePair], [stablePairState, stablePair], [stableNativePairState, stableNativePair]] =
     usePairs(tokenPairs)
 
@@ -109,14 +117,37 @@ export const useStableCakeAmount = (_amount: number): number | undefined => {
 }
 
 export const useCakePrice = () => {
-  return useSWR(
+  return useSWRImmutable(
     ['cake-usd-price'],
     async () => {
-      const cake = await (await fetch('https://farms.pancake-swap.workers.dev/price/cake')).json()
+      const cake = await (await fetch('https://farms-api.pancakeswap.com/price/cake')).json()
       return cake.price
     },
     {
       refreshInterval: 1_000 * 10,
     },
   )
+}
+
+export const usePriceCakeUsdc = () => {
+  const { chainId } = useActiveWeb3React()
+  const cakePrice = useTokenUsdcPrice(CAKE[chainId])
+  return useMemo(() => (cakePrice ? new BigNumber(cakePrice) : BIG_ZERO), [cakePrice])
+}
+
+export const useTokenUsdcPrice = (currency?: Currency): BigNumber => {
+  const { chainId } = useActiveWeb3React()
+  const USDC = L0_USDC[currency?.chainId || chainId]
+
+  const allowedPairs = useAllCommonPairs(currency, USDC)
+  const tokenInAmount = tryParseAmount('1', currency)
+
+  if (!tokenInAmount || !allowedPairs?.length) {
+    return BIG_ZERO
+  }
+
+  const trade = Trade.bestTradeExactIn(allowedPairs, tokenInAmount, USDC, { maxHops: 3, maxNumResults: 1 })[0]
+  const usdcAmount = trade?.outputAmount?.toSignificant() || '0'
+
+  return new BigNumber(usdcAmount)
 }

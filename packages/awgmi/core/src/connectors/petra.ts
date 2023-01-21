@@ -32,7 +32,7 @@ export class PetraConnector extends Connector<Window['aptos'], PetraConnectorOpt
     let name = 'Petra'
     const overrideName = config.options?.name
     if (typeof overrideName === 'string') name = overrideName
-    this.id = 'petra'
+    this.id = config.options?.id || 'petra'
     this.name = name
   }
 
@@ -94,13 +94,13 @@ export class PetraConnector extends Connector<Window['aptos'], PetraConnectorOpt
     }
   }
 
-  async signAndSubmitTransaction(tx: Types.EntryFunctionPayload) {
+  async signAndSubmitTransaction(tx: Types.TransactionPayload) {
     const provider = await this.getProvider()
     if (!provider) throw new ConnectorNotFoundError()
     return provider.signAndSubmitTransaction(tx)
   }
 
-  async signTransaction(tx: Types.EntryFunctionPayload) {
+  async signTransaction(tx: Types.TransactionPayload) {
     const provider = await this.getProvider()
     if (!provider) throw new ConnectorNotFoundError()
     return provider.signTransaction(tx)

@@ -1,4 +1,3 @@
-import { isIOS } from 'react-device-detect'
 import { WalletConfigV2 } from '@pancakeswap/ui-wallets'
 
 export enum ConnectorNames {
@@ -8,6 +7,7 @@ export enum ConnectorNames {
   Fewcha = 'fewcha',
   Blocto = 'blocto',
   TrustWallet = 'trustWallet',
+  SafePal = 'safePal',
 }
 
 export const wallets: WalletConfigV2<ConnectorNames>[] = [
@@ -41,18 +41,18 @@ export const wallets: WalletConfigV2<ConnectorNames>[] = [
       desktop: 'https://chrome.google.com/webstore/detail/pontem-aptos-wallet/phkbamefinggmakgklpkljjmgibohnba',
     },
   },
-  // {
-  //   id: 'fewcha',
-  //   title: 'Fewcha',
-  //   icon: '/images/wallets/fewcha.png',
-  //   get installed() {
-  //     return typeof window !== 'undefined' && Boolean(window.fewcha)
-  //   },
-  //   connectorId: ConnectorNames.Fewcha,
-  //   downloadLink: {
-  //     desktop: 'https://fewcha.app/',
-  //   },
-  // },
+  {
+    id: 'fewcha',
+    title: 'Fewcha',
+    icon: '/images/wallets/fewcha.png',
+    get installed() {
+      return typeof window !== 'undefined' && Boolean(window.fewcha)
+    },
+    connectorId: ConnectorNames.Fewcha,
+    downloadLink: {
+      desktop: 'https://fewcha.app/',
+    },
+  },
   {
     id: 'blocto',
     title: 'Blocto',
@@ -62,13 +62,26 @@ export const wallets: WalletConfigV2<ConnectorNames>[] = [
     },
     connectorId: ConnectorNames.Blocto,
   },
-  // {
-  //   id: 'trustWallet',
-  //   title: 'Trust Wallet',
-  //   icon: 'https://pancakeswap.finance/images/wallets/trust.png',
-  //   get installed() {
-  //     return typeof window !== 'undefined' && isIOS && Boolean(window.aptos) && Boolean((window.aptos as any)?.isTrust)
-  //   },
-  //   connectorId: ConnectorNames.TrustWallet,
-  // },
+  {
+    id: 'trustWallet',
+    title: 'Trust Wallet',
+    icon: 'https://pancakeswap.finance/images/wallets/trust.png',
+    get installed() {
+      return typeof window !== 'undefined' && Boolean(window.aptos) && Boolean((window.aptos as any)?.isTrust)
+    },
+    deepLink: 'https://link.trustwallet.com/open_url?coin_id=637&url=https://aptos.pancakeswap.finance/',
+    connectorId: ConnectorNames.TrustWallet,
+  },
+  {
+    id: 'safePal',
+    title: 'SafePal',
+    icon: 'https://pancakeswap.finance/images/wallets/safepal.png',
+    get installed() {
+      return typeof window !== 'undefined' && Boolean(window.safePal) && Boolean((window.safePal as any)?.sfpPlatform)
+    },
+    connectorId: ConnectorNames.SafePal,
+    downloadLink: {
+      desktop: 'https://chrome.google.com/webstore/detail/safepal-extension-wallet/lgmpcpglpngdoalbgeoldeajfclnhafa',
+    },
+  },
 ]
