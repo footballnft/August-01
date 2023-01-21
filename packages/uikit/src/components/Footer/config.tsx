@@ -87,14 +87,16 @@ export const footerLinks: FooterLinkType[] = [
 
 export const socials = [
   {
-    label: "",
-    href: "",
+    label: "Twitter",
+    icon: TwitterIcon,
+    href: "https://twitter.com/amehswap",
   },
   {
-    label: "",
+    label: "Telegram",
+    icon: TelegramIcon,
     items: [
       {
-        label: "",
+        label: "English",
         href: "",
       },
       {
@@ -159,7 +161,32 @@ export const socials = [
       },
     ],
   },
-];
+  {
+    label: "Reddit",
+    icon: RedditIcon,
+    href: "",
+  },
+  {
+    label: "Instagram",
+    icon: InstagramIcon,
+    href: "",
+  },
+  {
+    label: "Github",
+    icon: GithubIcon,
+    href: "",
+  },
+  {
+    label: "Discord",
+    icon: DiscordIcon,
+    href: "",
+  },
+  {
+    label: "Medium",
+    icon: MediumIcon,
+    href: "",
+  },
+    ]
 
 export const langs: Language[] = [...Array(20)].map((_, i) => ({
   code: `en${i}`,
