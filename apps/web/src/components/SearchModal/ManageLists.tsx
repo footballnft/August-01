@@ -35,7 +35,7 @@ const Wrapper = styled(Column)`
 `
 
 const RowWrapper = styled(Row)<{ active: boolean; hasActiveTokens: boolean }>`
-  background-color: ${({ active, theme }) => (active ? `${theme.colors.success19}` : 'transparent')};
+  background-color: ${({ active, theme }) => (active ? `${theme.colors.success}19` : 'transparent')};
   border: solid 1px;
   border-color: ${({ active, theme }) => (active ? theme.colors.success : theme.colors.tertiary)};
   transition: 200ms;
