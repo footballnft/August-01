@@ -41,13 +41,13 @@ const StyledLink = styled("a")`
   }
 `;
 
-const Logo: React.FC<React.PropsWithChildren<Props>> = ({ isDark, href }) => {
+const Logo: React.FC<React.PropsWithChildren<Props>> = ({ href }) => {
   const { linkComponent } = useContext(MenuContext);
   const isAbsoluteUrl = href.startsWith("http");
   const innerLogo = (
     <>
       <LogoIcon className="mobile-icon" />
-      <LogoWithTextIcon className="desktop-icon" isDark={isDark} />
+      <LogoWithTextIcon className="desktop-icon" isDark />
     </>
   );
 
