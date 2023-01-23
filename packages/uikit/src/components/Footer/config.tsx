@@ -1,7 +1,7 @@
 import { Language } from "../LangSelector/types";
 import { FooterLinkType } from "./types";
 import {
-  TwitterIcon,
+  TwitterIcon
 } from "../Svg";
 
 export const footerLinks: FooterLinkType[] = [
