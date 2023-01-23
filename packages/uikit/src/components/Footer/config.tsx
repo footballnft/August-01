@@ -2,13 +2,6 @@ import { Language } from "../LangSelector/types";
 import { FooterLinkType } from "./types";
 import {
   TwitterIcon,
-  TelegramIcon,
-  RedditIcon,
-  InstagramIcon,
-  GithubIcon,
-  DiscordIcon,
-  MediumIcon,
-  YoutubeIcon,
 } from "../Svg";
 
 export const footerLinks: FooterLinkType[] = [
@@ -42,7 +35,7 @@ export const footerLinks: FooterLinkType[] = [
     ],
   },
   {
-    label: "Help",
+    label: "",
     items: [
       {
         label: "",
@@ -93,7 +86,6 @@ export const socials = [
   },
   {
     label: "Telegram",
-    icon: TelegramIcon,
     items: [
       {
         label: "English",
@@ -163,27 +155,22 @@ export const socials = [
   },
   {
     label: "Reddit",
-    icon: RedditIcon,
     href: "",
   },
   {
     label: "Instagram",
-    icon: InstagramIcon,
     href: "",
   },
   {
     label: "Github",
-    icon: GithubIcon,
     href: "",
   },
   {
     label: "Discord",
-    icon: DiscordIcon,
     href: "",
   },
   {
     label: "Medium",
-    icon: MediumIcon,
     href: "",
   },
     ]
