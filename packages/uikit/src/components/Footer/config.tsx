@@ -1,7 +1,14 @@
 import { Language } from "../LangSelector/types";
 import { FooterLinkType } from "./types";
 import {
-  TwitterIcon
+  TwitterIcon,
+  TelegramIcon,
+  RedditIcon,
+  InstagramIcon,
+  GithubIcon,
+  DiscordIcon,
+  MediumIcon,
+  YoutubeIcon,
 } from "../Svg";
 
 export const footerLinks: FooterLinkType[] = [
@@ -86,6 +93,7 @@ export const socials = [
   },
   {
     label: "",
+    icon: TelegramIcon,
     items: [
       {
         label: "",
@@ -155,25 +163,35 @@ export const socials = [
   },
   {
     label: "",
+    icon: RedditIcon,
     href: "",
   },
   {
     label: "",
+    icon: InstagramIcon,
     href: "",
   },
   {
     label: "",
+    icon: GithubIcon,
     href: "",
   },
   {
     label: "",
+    icon: DiscordIcon,
     href: "",
   },
   {
     label: "",
+    icon: MediumIcon,
     href: "",
   },
-    ]
+  {
+    label: "",
+    icon: YoutubeIcon,
+    href: "",
+  },
+    ];
 
 export const langs: Language[] = [...Array(20)].map((_, i) => ({
   code: `en${i}`,
