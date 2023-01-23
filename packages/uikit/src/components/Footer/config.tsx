@@ -7,6 +7,8 @@ import {
   InstagramIcon,
   GithubIcon,
   DiscordIcon,
+  MediumIcon,
+  YoutubeIcon,
 } from "../Svg";
 
 export const footerLinks: FooterLinkType[] = [
@@ -181,10 +183,12 @@ export const socials = [
   },
   {
     label: "",
+    icon: MediumIcon,
     href: "",
   },
   {
     label: "",
+    icon: YoutubeIcon,
     href: "",
   },
     ];
