@@ -85,10 +85,10 @@ export const socials = [
     href: "https://twitter.com/amehswap",
   },
   {
-    label: "Telegram",
+    label: "",
     items: [
       {
-        label: "English",
+        label: "",
         href: "",
       },
       {
@@ -154,23 +154,23 @@ export const socials = [
     ],
   },
   {
-    label: "Reddit",
+    label: "",
     href: "",
   },
   {
-    label: "Instagram",
+    label: "",
     href: "",
   },
   {
-    label: "Github",
+    label: "",
     href: "",
   },
   {
-    label: "Discord",
+    label: "",
     href: "",
   },
   {
-    label: "Medium",
+    label: "",
     href: "",
   },
     ]
