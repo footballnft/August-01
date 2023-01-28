@@ -69,16 +69,16 @@ function MyApp(props: AppProps<{ initialReduxState: any }>) {
         />
         <meta
           name="description"
-          content="Discover AmehSwap, the leading fiat to crypto DEX on Binance Smart Chain (BSC)."
+          content="Experience the freedom and security of buying cryptocurrencies without the hassle of KYC!."
         />
         <meta name="theme-color" content="#1FC7D4" />
         <meta name="twitter:image" content="https://amehswap.com/images/ameh-hero.png" />
         <meta
           name="twitter:description"
-          content="The most popular AMM on BSC! Earn CAKE through yield farming or win it in the Lottery, then stake it in Syrup Pools to earn more tokens! Initial Farm Offerings (new token launch model pioneered by PancakeSwap), NFTs, and more, on a platform you can trust."
+          content="Experience the freedom and security of buying cryptocurrencies without the hassle of KYC! With AmehSwap, you easily purchase your favorite coins and tokens anonymously. No more waiting for credit checks or dealing with government regulations. Join the decentralized revolution and take control of your financial future today!"
         />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="🥞 AmehSwap - The best fiat to crypto DEX on Binance Smart Chain (BSC)" />
+        <meta name="twitter:title" content="🥞 AmehSwap - The best fiat to crypto DEX" />
         <title>AmehSwap</title>
         {(Component as NextPageWithLayout).mp && (
           // eslint-disable-next-line @next/next/no-sync-scripts

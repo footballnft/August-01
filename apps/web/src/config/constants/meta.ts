@@ -5,7 +5,7 @@ import { PageMeta } from './types'
 export const DEFAULT_META: PageMeta = {
   title: 'AmehSwap',
   description:
-    'Discover AmehSwap, the leading fiat to crypto DEX on Binance Smart Chain (BSC), the fastest and most seamless experience for the conversion of your fiat to crypto on PancakeSwap.',
+    'Experience the freedom and security of buying cryptocurrencies without the hassle of KYC! With AmehSwap, you easily purchase your favorite coins and tokens anonymously. No more waiting for credit checks or dealing with government regulations. Join the decentralized revolution and take control of your financial future today!',
   image: 'https://amehswap.com/images/ameh-hero.png',
 }
 

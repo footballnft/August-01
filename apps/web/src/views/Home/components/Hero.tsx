@@ -124,10 +124,10 @@ const Hero = () => {
       >
         <Flex flex="1" flexDirection="column">
           <Heading scale="xxl" color="secondary" mb="24px">
-            {t('Welcome. Buy crypto with your fiat.')}
+            {t('Buy crypto with fiat without KYC.')}
           </Heading>
           <Heading scale="md" mb="24px">
-            {t('Buy crypto on AmehSwap. The fastest and most seamless experience for the conversion of your fiat to crypto on PANCAKESWAP.')}
+            {t('Welcome to AmehSwap, here you buy cryptocurrencies using fiat currency without the need for any Know Your Customer (KYC) verification. Our platform is a fork of Pancakeswap, ensuring that your transactions are secure, fast and anonymous. You can buy your favorite cryptocurrencies anonymously, with the convenience of using fiat currency. You can buy crypto with credit cards, apple pay and google pay. Join the decentralized revolution now and start buying cryptocurrencies in a fast and easy way! NB: NO KYC, ONLY APPLY TO TRANSACTIONS OF $50 (OR ITS EQUIVALENTS) AND BELOW')}
           </Heading>
           <Flex>
             {!account && <ConnectWalletButton mr="8px" />}
