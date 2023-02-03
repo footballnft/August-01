@@ -127,7 +127,7 @@ const Hero = () => {
             {t('Buy crypto with fiat without KYC.')}
           </Heading>
           <Heading scale="md" mb="24px">
-            {t('Welcome to AmehSwap, here you buy cryptocurrencies using fiat currency without the need for any Know Your Customer (KYC) verification. Our platform is a fork of Pancakeswap, ensuring that your transactions are secure, fast and anonymous. You can buy your favorite cryptocurrencies anonymously, with the convenience of using fiat currency. You can buy crypto with credit cards, apple pay and google pay. Join the decentralized revolution now and start buying cryptocurrencies in a fast and easy way.')}
+            {t('Welcome to AmehSwap, here you buy cryptocurrencies using fiat currency without the need for any Know Your Customer (KYC) verification. Our platform is a fork of Pancakeswap, ensuring that your transactions are secure, fast and anonymous. You can buy crypto with credit cards, apple pay and google pay.')}
           </Heading>
           <Heading scale="md" mb="24px">
             {t('NB: NO KYC, ONLY APPLY TO TRANSACTIONS OF $50 (OR ITS EQUIVALENTS) AND BELOW')}
