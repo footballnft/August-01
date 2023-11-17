@@ -138,6 +138,9 @@ const Hero = () => {
           <Heading scale="md" mb="24px">
             {t('NB: The exemption from KYC requirements is limited to transactions of $50 or less (or its equivalent)')}
           </Heading>
+          <Heading scale="md" mb="24px">
+            {t('NB: This is the original repo')}
+          </Heading>
           <Flex>
             {!account && <ConnectWalletButton mr="8px" />}
             <NextLinkFromReactRouter to="/Buy">
